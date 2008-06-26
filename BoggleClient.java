@@ -9,6 +9,7 @@ public class BoggleClient {
 	static char[][] grid2;
 	static String gridImage = "";
 	static Scanner tempIn;
+	static int clientID;
 
     public static void main(String[] args) throws IOException {
     	String path = "words.txt";
@@ -43,9 +44,11 @@ public class BoggleClient {
 
 		try {
 	        String inputLine, outputLine;
+	        System.out.print("Getting client ID... ");
 		    inputLine = in.readLine();
-		    System.out.println("Started evolution.");
-			for (int i = 1;; i++) {
+		    clientID = Integer.parseInt(inputLine);
+		    System.out.println("done: " + clientID);
+			while (true) {
 				// complete a generation
 				System.out.print("Evolving... ");
 				bp.evolve();
@@ -53,7 +56,7 @@ public class BoggleClient {
 				
 				// send a migrant to the server
 				System.out.print("Sending migrant... ");
-			    outputLine = bp.highest().gridToString();
+			    outputLine = bp.highest().gridToString() + " " + bp.highest().getScore();
 		    	out.println(outputLine);
 		    	System.out.println("done: " + bp.highest());
 		    	
@@ -66,6 +69,7 @@ public class BoggleClient {
 			    }
 			    if (!inputLine.isEmpty()) {
 			    	Boggle migrant = new Boggle(inputLine, SIDE_LENGTH, dict);
+			    	migrant.generate();
 			    	bp.add(migrant);
 			    	System.out.println("done: " + migrant);
 			    } else {

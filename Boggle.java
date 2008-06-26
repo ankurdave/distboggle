@@ -1,14 +1,12 @@
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 
 /**
  * Solves a Boggle board.
  * 
  * @author ankur
  */
-public class Boggle implements Comparable, Serializable
+public class Boggle implements Comparable
 {
 	/**
 	 * Length of one side of the Boggle board.
