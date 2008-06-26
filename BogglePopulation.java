@@ -126,7 +126,7 @@ public class BogglePopulation
 			}
 		}
 		// do elitist selection
-		children.add(highest());
+//		children.add(highest());
 		// make sure number of children <= popCap by removing the worst few
 		Collections.sort(children);
 		while (children.size() > popCap)
@@ -151,6 +151,15 @@ public class BogglePopulation
 			throw new GenerationEmptyException(
 				"not enough Boggles in current generation to find maximum");
 		return Collections.max(currentGeneration);
+	}
+	
+	public Boggle removeHighest() throws GenerationEmptyException {
+		if (numBoggles() <= 0)
+			throw new GenerationEmptyException(
+				"not enough Boggles in current generation to find maximum");
+		Boggle highest = Collections.max(currentGeneration);
+		currentGeneration.remove(highest);
+		return highest;
 	}
 	
 	/**
