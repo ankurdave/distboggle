@@ -33,11 +33,10 @@ public class BoggleClient {
             in = new BufferedReader(new InputStreamReader(
                                         echoSocket.getInputStream()));
         } catch (UnknownHostException e) {
-            System.err.println("Don't know about host: taranis.");
+            System.err.println("Couldn't connect: " + e.getMessage());
             System.exit(1);
         } catch (IOException e) {
-            System.err.println("Couldn't get I/O for "
-                               + "the connection to: taranis.");
+            System.err.println("Couldn't connect: " + e.getMessage());
             System.exit(1);
         }
         System.out.println("done.");
@@ -67,7 +66,6 @@ public class BoggleClient {
 			    }
 			    if (!inputLine.isEmpty()) {
 			    	Boggle migrant = new Boggle(inputLine, SIDE_LENGTH, dict);
-			    	migrant.generate();
 			    	bp.add(migrant);
 			    	System.out.println("done: " + migrant);
 			    } else {
