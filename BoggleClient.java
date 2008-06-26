@@ -28,7 +28,7 @@ public class BoggleClient {
         PrintWriter out = null;
         BufferedReader in = null;
         try {
-            echoSocket = new Socket("ankur-laptop", 4444);
+            echoSocket = new Socket("192.168.1.223", 4444);
             out = new PrintWriter(echoSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(
                                         echoSocket.getInputStream()));
