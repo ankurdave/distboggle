@@ -56,10 +56,10 @@ public class BoggleClient {
 				
 				// send a migrant to the server
 				System.out.print("Sending migrant... ");
-				Boggle migrant = bp.removeHighest(); 
-			    outputLine = clientID + " " + migrant.gridToString() + " " + migrant.getScore();
+				Boggle highest = bp.removeHighest(); 
+			    outputLine = clientID + " " + highest.gridToString() + " " + highest.getScore();
 		    	out.println(outputLine);
-		    	System.out.println("done: " + migrant);
+		    	System.out.println("done: " + highest);
 		    	
 		    	// get a migrant from the server
 		    	System.out.print("Getting migrant... ");
