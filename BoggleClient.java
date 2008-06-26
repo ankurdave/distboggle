@@ -68,7 +68,7 @@ public class BoggleClient {
 			    	break;
 			    }
 			    if (!inputLine.isEmpty()) {
-			    	Boggle migrant = new Boggle(inputLine, SIDE_LENGTH, dict);
+			    	Boggle migrant = new Boggle(inputLine.split(" ")[0], SIDE_LENGTH, Integer.parseInt(inputLine.split(" ")[1]), dict);
 			    	migrant.generate();
 			    	bp.add(migrant);
 			    	System.out.println("done: " + migrant);

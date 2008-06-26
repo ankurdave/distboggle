@@ -79,7 +79,7 @@ public class Boggle implements Comparable
 				board[i][j] = new Letter(grid[i][j], i, j);
 	}
 	
-	public Boggle(String s, int sideLength, Dictionary dict) {
+	public Boggle(String s, int sideLength, int score, Dictionary dict) {
 		// todo: error handling
 		
 		char[][] grid = new char[sideLength][sideLength];
@@ -95,6 +95,7 @@ public class Boggle implements Comparable
 		assert grid.length > 0;
 		assert dict != null;
 		// copy params to fields
+		this.score = score;
 		this.grid = grid;
 		this.dict = dict;
 		this.sideLength = sideLength;
