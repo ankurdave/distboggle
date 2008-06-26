@@ -50,8 +50,19 @@ public class BoggleServerThread extends Thread {
 			    out.println(outputLine);
 	    		
 	    		// add migrant to queue from inputLine
-			    mq.add(inputLine);
-	    		System.out.println("Receiving migrant: " + inputLine);
+			    if (!inputLine.isEmpty()) {
+			    	boolean alreadyExists = false;
+			    	for (String s : mq) {
+			    		if (s.equals(inputLine)) {
+			    			alreadyExists = true;
+			    			break;
+			    		}
+			    	}
+			    	if (!alreadyExists) {
+			    		mq.add(inputLine);
+			    		System.out.println("Receiving migrant: " + inputLine);
+			    	}
+			    }
 		    }
 		    
 		    out.close();

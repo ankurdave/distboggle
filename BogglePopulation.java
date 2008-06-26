@@ -242,11 +242,7 @@ public class BogglePopulation
 		String s = "";
 		try
 		{
-			s = "BogglePopulation[" + "generation=" + generation + "; "
-				+ "popCap=" + popCap + "; " + "number of Boggles="
-				+ currentGeneration.size() + "; " + "high score="
-				+ highest().getScore() + "; " + "avg score=" + averageScore()
-				+ "; " + "low score=" + lowest().getScore() + "]";
+			s = generation + " " + highest().getScore() + " " + averageScore() + " " + lowest().getScore();
 		}
 		catch (GenerationEmptyException e)
 		{

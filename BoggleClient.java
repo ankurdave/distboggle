@@ -15,7 +15,7 @@ public class BoggleClient {
     	String path = "words.txt";
     	SIDE_LENGTH = 4;
     	
-    	System.out.println("Started client.");
+//    	System.out.println("Started client.");
     	
 		// make a board so we can get its dictionaries
 		Dictionary dict = new Dictionary();
@@ -24,7 +24,7 @@ public class BoggleClient {
 		BogglePopulation bp = new BogglePopulation(SIDE_LENGTH, 5, 5, 20, dict);
 
 		// connect to the server
-		System.out.print("Connecting to server... ");
+//		System.out.print("Connecting to server... ");
 		Socket echoSocket = null;
         PrintWriter out = null;
         BufferedReader in = null;
@@ -40,29 +40,34 @@ public class BoggleClient {
             System.err.println("Couldn't connect: " + e.getMessage());
             System.exit(1);
         }
-        System.out.println("done.");
+//        System.out.println("done.");
 
 		try {
 	        String inputLine, outputLine;
-	        System.out.print("Getting client ID... ");
+//	        System.out.print("Getting client ID... ");
 		    inputLine = in.readLine();
 		    clientID = Integer.parseInt(inputLine);
-		    System.out.println("done: " + clientID);
+//		    System.out.println("done: " + clientID);
 			while (true) {
 				// complete a generation
-				System.out.print("Evolving... ");
+//				System.out.print("Evolving... ");
 				bp.evolve();
-				System.out.println("done: " + bp);
+//				System.out.println("done: " + bp);
+				System.out.println(bp);
 				
 				// send a migrant to the server
-				System.out.print("Sending migrant... ");
-				Boggle highest = bp.highest(); 
-			    outputLine = clientID + " " + highest.gridToString() + " " + highest.getScore();
-		    	out.println(outputLine);
-		    	System.out.println("done: " + highest);
+//				System.out.print("Sending migrant... ");
+				if (Math.random() > 0.5) {
+					Boggle highest = bp.highest();
+				    outputLine = clientID + " " + highest.gridToString() + " " + highest.getScore();
+			    	out.println(outputLine);
+				} else {
+					out.println("");
+				}
+//		    	System.out.println("done: " + highest);
 		    	
 		    	// get a migrant from the server
-		    	System.out.print("Getting migrant... ");
+//		    	System.out.print("Getting migrant... ");
 			    inputLine = in.readLine();
 			    if (inputLine == null) {
 			    	System.out.println("Server closed connection.");
@@ -71,9 +76,9 @@ public class BoggleClient {
 			    if (!inputLine.isEmpty()) {
 			    	Boggle migrant = new Boggle(inputLine.split(" ")[1], SIDE_LENGTH, Integer.parseInt(inputLine.split(" ")[2]), dict);
 			    	bp.add(migrant);
-			    	System.out.println("done: " + migrant);
+//			    	System.out.println("done: " + migrant);
 			    } else {
-			    	System.out.println("none available.");
+//			    	System.out.println("none available.");
 			    }
 			}
 		} catch (GenerationEmptyException e) {
