@@ -126,7 +126,7 @@ public class BogglePopulation
 			}
 		}
 		// do elitist selection
-//		children.add(highest());
+		children.add(highest());
 		// make sure number of children <= popCap by removing the worst few
 		Collections.sort(children);
 		while (children.size() > popCap)
