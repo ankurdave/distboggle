@@ -56,7 +56,7 @@ public class BoggleClient {
 				
 				// send a migrant to the server
 				System.out.print("Sending migrant... ");
-			    outputLine = bp.highest().gridToString() + " " + bp.highest().getScore();
+			    outputLine = clientID + " " + bp.highest().gridToString() + " " + bp.highest().getScore();
 		    	out.println(outputLine);
 		    	System.out.println("done: " + bp.highest());
 		    	
@@ -68,7 +68,7 @@ public class BoggleClient {
 			    	break;
 			    }
 			    if (!inputLine.isEmpty()) {
-			    	Boggle migrant = new Boggle(inputLine.split(" ")[0], SIDE_LENGTH, Integer.parseInt(inputLine.split(" ")[2]), dict);
+			    	Boggle migrant = new Boggle(inputLine.split(" ")[1], SIDE_LENGTH, Integer.parseInt(inputLine.split(" ")[2]), dict);
 			    	migrant.generate();
 			    	bp.add(migrant);
 			    	System.out.println("done: " + migrant);
