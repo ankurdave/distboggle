@@ -91,7 +91,7 @@ public class BoggleServer {
 	public synchronized String getMigrantForClient(int clientID) {
 		for (Client c : clients) {
 			if (c.getId() == clientID) {
-				String migrant;
+				String migrant = null;
 				if (c.getMigrant() != null) {
 					migrant = c.getMigrant().toString();
 				}
