@@ -46,38 +46,30 @@ public class BoggleServerThread extends Thread {
 			out = new PrintWriter(socket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(socket
 			        .getInputStream()));
-			giveClientInit();
 
 			while (true) {
 				readClientInput();
-
 				giveClientOutput();
 			}
 		}
 		catch (IOException e) {
 			System.err.println(e);
+			System.exit(1);
 		}
-	}
-
-	private void giveClientInit() {
-		// end the transmission
-		out.println();
 	}
 
 	private void readClientInput() throws IOException {
 		String line;
 		Matcher m;
 		// for each line in the input
-		while ((line = in.readLine()) != null) {
+		while (!(line = in.readLine()).isEmpty()) {
+			if (line == null) {
+				throw new IOException("Client closed connection");
+			}
 			// try to find data in it
 			m = pair.matcher(line);
 			if (m.matches()) {
 				storeClientData(m.group(1), m.group(2));
-			}
-
-			// check for end of transmission
-			if (line.equals("")) {
-				break;
 			}
 		}
 	}
@@ -95,10 +87,12 @@ public class BoggleServerThread extends Thread {
 		String migrant = server.getMigrantForClient(clientID);
 		if (migrant != null) {
 			out.println("Migrant: " + migrant);
+			System.err.println("Migrant: " + migrant);
 		}
 
 		// end the transmission
 		out.println();
+		System.err.println();
 	}
 
 }
