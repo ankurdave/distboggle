@@ -75,7 +75,7 @@ public class BoggleServerThread extends Thread {
 	}
 
 	private void storeClientData(String name, String value) {
-		if (name.equalsIgnoreCase("average-score")) {
+		if (name.equalsIgnoreCase("score")) {
 			server.setClientScore(clientID, Integer.parseInt(value));
 		} else if (name.equalsIgnoreCase("migrant")) {
 			server.addMigrant(value, clientID);

@@ -63,8 +63,8 @@ public class BoggleClient {
 
 	private void giveServerOutput() throws GenerationEmptyException {
 		// tell server the score
-		out.println("Average-Score:" + bp.averageScore());
-		System.err.println("Average-Score:" + bp.averageScore());
+		out.println("Score:" + bp.highest().getScore());
+		System.err.println("Score:" + bp.highest().getScore());
 
 		// send a migrant to the server
 		Boggle highest = bp.highest();

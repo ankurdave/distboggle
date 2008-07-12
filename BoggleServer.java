@@ -26,6 +26,7 @@ public class BoggleServer {
      * Network socket that the server uses to communicate.
      */
 	private ServerSocket socket;
+	private int n = 0;
 
 	public BoggleServer(int port) {
 		this.port = port;
@@ -67,21 +68,28 @@ public class BoggleServer {
 		return curClientID++;
 	}
 
-	public synchronized void setClientScore(int clientID, int avgScore) {
+	public synchronized void setClientScore(int clientID, int score) {
 		for (Client c : clients) {
 			if (c.getId() == clientID) {
-				c.setAvgScore(avgScore);
+				c.setScore(score);
 			}
 		}
+		
+		Collections.sort(clients);
+		System.out.println(n++ + " " + clients.get(0).getScore());
 	}
 
 	public synchronized void addMigrant(String migrantStr, int clientID) {
 		Migrant m = new Migrant(migrantStr);
+		Client source = getClient(clientID);
+		if (source == null) {
+			return;
+		}
 		Collections.sort(clients);
 		for (Client c : clients) {
 			if (c.getId() != clientID
 			        && (c.getMigrant() == null || c.getMigrant().getScore() < m
-			                .getScore())) {
+			                .getScore()) && c.getScore() > source.getScore()) {
 				c.setMigrant(m);
 				break;
 			}
@@ -89,35 +97,43 @@ public class BoggleServer {
 	}
 
 	public synchronized String getMigrantForClient(int clientID) {
-		for (Client c : clients) {
+		String migrant = null;
+		Client c = getClient(clientID);
+		if (c == null) {
+			return null;
+		}
+		if (c.getMigrant() != null) {
+			migrant = c.getMigrant().toString();
+			c.setMigrant(null);
+		}
+		return migrant;
+	}
+	
+	 private Client getClient(int clientID) {
+		 for (Client c : clients) {
 			if (c.getId() == clientID) {
-				String migrant = null;
-				if (c.getMigrant() != null) {
-					migrant = c.getMigrant().toString();
-				}
-				c.setMigrant(null);
-				return migrant;
+				return c;
 			}
 		}
 		return null;
-	}
+	 }
 }
 
 class Client implements Comparable<Client> {
 	private int id;
-	private int avgScore;
+	private int score;
 	private Migrant migrant;
 
 	public Client(int id) {
 		this.id = id;
 	}
 
-	public int getAvgScore() {
-		return avgScore;
+	public int getScore() {
+		return score;
 	}
 
-	public void setAvgScore(int avgScore) {
-		this.avgScore = avgScore;
+	public void setScore(int score) {
+		this.score = score;
 	}
 
 	public Migrant getMigrant() {
@@ -133,7 +149,7 @@ class Client implements Comparable<Client> {
 	}
 
 	public int compareTo(Client that) {
-		return that.getAvgScore() - this.getAvgScore(); // descending order
+		return that.getScore() - this.getScore(); // descending order
 	}
 }
 
