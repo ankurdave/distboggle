@@ -147,7 +147,7 @@ public class Boggle implements Comparable {
 				lower = this;
 			}
 		}
-		
+
 		// check if the parents are too similar
 		int sameLetters = 0;
 		for (int i = 0; i < sideLength; i++) {
@@ -158,10 +158,10 @@ public class Boggle implements Comparable {
 			}
 		}
 
-		if ((float)sameLetters / (sideLength * sideLength) >= 0.85) {
+		if ((float) sameLetters / (sideLength * sideLength) >= 0.85) {
 			// if they are, randomize to introduce genetic variation
 			childGrid = BogglePopulation.randomGrid(sideLength);
-		} else {		
+		} else {
 			// otherwise construct the child grid
 			int temp;
 			for (int i = 0; i < sideLength; i++) {

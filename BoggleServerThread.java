@@ -3,78 +3,102 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+/**
+ * @author ankur Thread started by BoggleServer to handle BoggleClients.
+ */
 public class BoggleServerThread extends Thread {
-	private Socket socket = null;
+	/**
+     * The socket used to communicate with the client.
+     */
+	private Socket socket;
 
+	/**
+     * The ID of the client that this thread serves.
+     */
 	private int clientID;
 
-	public BoggleServerThread(Socket socket) {
+	/**
+     * A reference to the main server thread that started this worker thread.
+     */
+	private BoggleServer server;
+
+	private PrintWriter out;
+
+	private BufferedReader in;
+
+	private static Pattern pair = Pattern
+	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
+
+	public BoggleServerThread(BoggleServer server, Socket socket) {
 		super("BoggleServerThread");
+
+		this.server = server;
 		this.socket = socket;
-		this.clientID = BoggleServer.curClientID++;
-		System.out.println("New client " + clientID + " addr "
-		        + socket.getInetAddress());
+		this.clientID = server.getNextClientID();
 	}
 
 	public void run() {
 		try {
-			ArrayList<String> mq = BoggleServer.migrantQueue;
-			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket
+			// init the IO facilities for the socket
+			out = new PrintWriter(socket.getOutputStream(), true);
+			in = new BufferedReader(new InputStreamReader(socket
 			        .getInputStream()));
+			giveClientInit();
 
-			String inputLine, outputLine;
-			outputLine = Integer.toString(clientID);
-			out.println(outputLine);
+			while (true) {
+				readClientInput();
 
-			while ((inputLine = in.readLine()) != null) {
-				System.out.println(clientID + " finished a generation.");
-
-				// take migrants (if any) off queue into outputLine
-				if (!mq.isEmpty() && Math.random() > 0.5) {
-					Collections.sort(mq, new ByBoardScore());
-
-					String migrant = "";
-					for (int i = 0; i < mq.size(); i++) {
-						if (Integer.parseInt(mq.get(i).split(" ")[0]) != clientID) {
-							migrant = mq.get(i);
-							mq.remove(i);
-							System.out.println("Sending migrant: " + migrant);
-							break;
-						}
-					}
-					outputLine = migrant;
-				} else {
-					outputLine = "";
-				}
-				out.println(outputLine);
-
-				// add migrant to queue from inputLine
-				if (!inputLine.isEmpty()) {
-					boolean alreadyExists = false;
-					for (String s : mq) {
-						if (s.equals(inputLine)) {
-							alreadyExists = true;
-							break;
-						}
-					}
-					if (!alreadyExists) {
-						mq.add(inputLine);
-						System.out.println("Receiving migrant: " + inputLine);
-					}
-				}
+				giveClientOutput();
 			}
-
-			out.close();
-			in.close();
-			socket.close();
-
 		}
 		catch (IOException e) {
-			e.printStackTrace();
+			System.err.println(e);
 		}
 	}
+
+	private void giveClientInit() {
+		// end the transmission
+		out.println();
+	}
+
+	private void readClientInput() throws IOException {
+		String line;
+		Matcher m;
+		// for each line in the input
+		while ((line = in.readLine()) != null) {
+			// try to find data in it
+			m = pair.matcher(line);
+			if (m.matches()) {
+				storeClientData(m.group(1), m.group(2));
+			}
+
+			// check for end of transmission
+			if (line.equals("")) {
+				break;
+			}
+		}
+	}
+
+	private void storeClientData(String name, String value) {
+		if (name.equalsIgnoreCase("average-score")) {
+			server.setClientScore(clientID, Integer.parseInt(value));
+		} else if (name.equalsIgnoreCase("migrant")) {
+			server.addMigrant(value, clientID);
+		}
+	}
+
+	private void giveClientOutput() {
+		// give the migrant if there is one
+		String migrant = server.getMigrantForClient(clientID);
+		if (migrant != null) {
+			out.println("Migrant: " + migrant);
+		}
+
+		// end the transmission
+		out.println();
+	}
+
 }
