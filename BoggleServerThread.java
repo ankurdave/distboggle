@@ -7,7 +7,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author ankur Thread started by BoggleServer to handle BoggleClients.
+ * Thread started by BoggleServer to handle BoggleClients.
+ * @author ankur
  */
 public class BoggleServerThread extends Thread {
 	/**
@@ -63,9 +64,6 @@ public class BoggleServerThread extends Thread {
 		Matcher m;
 		// for each line in the input
 		while (!(line = in.readLine()).isEmpty()) {
-			if (line == null) {
-				throw new IOException("Client closed connection");
-			}
 			// try to find data in it
 			m = pair.matcher(line);
 			if (m.matches()) {
@@ -87,7 +85,7 @@ public class BoggleServerThread extends Thread {
 		String migrant = server.getMigrantForClient(clientID);
 		if (migrant != null) {
 			out.println("Migrant: " + migrant);
-			System.err.println("Migrant: " + migrant);
+			System.err.println("To client " + clientID + ": Migrant: " + migrant);
 		}
 
 		// end the transmission

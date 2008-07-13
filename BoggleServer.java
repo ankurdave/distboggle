@@ -4,14 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * @author ankur Server component of DistBoggle. Manages BoggleClients.
+ * Server component of DistBoggle. Manages BoggleClients.
+ * @author ankur
  */
 public class BoggleServer {
-	/**
-     * Port on which the server listens.
-     */
-	private int port;
-
 	/**
      * Client ID counter.
      */
@@ -26,11 +22,11 @@ public class BoggleServer {
      * Network socket that the server uses to communicate.
      */
 	private ServerSocket socket;
+	
+	// stats info for gnuplot
 	private int n = 0;
 
 	public BoggleServer(int port) {
-		this.port = port;
-
 		// create the socket
 		socket = null;
 		try {
@@ -75,6 +71,7 @@ public class BoggleServer {
 			}
 		}
 		
+		// stats info for gnuplot
 		Collections.sort(clients);
 		System.out.println(n++ + " " + clients.get(0).getScore());
 	}

@@ -125,7 +125,7 @@ public class Dictionary {
  * Represents each letter in the <CODE>Dictionary</CODE>.
  * @author Ankur Dave
  */
-class Letter extends Dictionary implements Comparable {
+class Letter extends Dictionary implements Comparable<Letter> {
 	/**
      * Character that this Letter object represents.
      */
@@ -170,8 +170,7 @@ class Letter extends Dictionary implements Comparable {
 		Collections.sort(this.children);
 	}
 
-	public int compareTo(Object o) {
-		Letter that = (Letter) o;
+	public int compareTo(Letter that) {
 		if (this.getData() > that.getData())
 			return 1;
 		else if (this.getData() < that.getData())

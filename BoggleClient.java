@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +46,11 @@ public class BoggleClient {
 			// complete a generation
 			try {
 				bp.evolve();
+				
+				for (Boggle b : bp.getCurrentGeneration()) {
+					System.out.println(b.getScore() + " " + b.gridToString());
+				}
+				System.out.println();
 
 				giveServerOutput();
 				readServerInput();

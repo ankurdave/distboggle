@@ -5,7 +5,7 @@ import java.util.HashSet;
  * Solves a Boggle board.
  * @author ankur
  */
-public class Boggle implements Comparable {
+public class Boggle implements Comparable<Boggle> {
 	/**
      * Length of one side of the Boggle board.
      */
@@ -110,9 +110,9 @@ public class Boggle implements Comparable {
      * Calculates the score of each board and on each character in the grid,
      * chooses randomly between three choices for the child:
      * <UL>
-     * <LI>use the character from the higher-scoring grid (weighted 5/10)
-     * <LI>use the character from the lower-scoring grid (weighted 4/10)
-     * <LI>use a random character (weighted 1/10)
+     * <LI>use the character from the higher-scoring grid (weighted 5/10, or 4/10 if incestuous)
+     * <LI>use the character from the lower-scoring grid (weighted 4/10, or 3/10 if incestuous)
+     * <LI>use a random character (weighted 1/10, or 3/10 if incestuous)
      * </UL>
      * @param that
      *            Boggle board to merge with the calling board
@@ -157,28 +157,31 @@ public class Boggle implements Comparable {
 				}
 			}
 		}
+		// if they are, mark it as incestuous
+		boolean incest = (float) sameLetters / (sideLength * sideLength) >= 0.85;
+		int higherChance = 5, lowerChance = 4;
+		if (incest) {
+			higherChance = 4;
+			lowerChance = 3;
+		}
 
-		if ((float) sameLetters / (sideLength * sideLength) >= 0.85) {
-			// if they are, randomize to introduce genetic variation
-			childGrid = BogglePopulation.randomGrid(sideLength);
-		} else {
-			// otherwise construct the child grid
-			int temp;
-			for (int i = 0; i < sideLength; i++) {
-				for (int j = 0; j < sideLength; j++) {
-					temp = (int) (Math.random() * 10); // 0-9
-					// higher
-					if (temp >= 0 && temp < 5) // 0-4
-						childGrid[i][j] = higher.grid[i][j];
-					// lower
-					else if (temp >= 5 && temp < 9) // 5-8
-						childGrid[i][j] = lower.grid[i][j];
-					else
-						// 9
-						childGrid[i][j] = randomLetter();
-				}
+		// construct the child grid
+		int temp;
+		for (int i = 0; i < sideLength; i++) {
+			for (int j = 0; j < sideLength; j++) {
+				temp = (int) (Math.random() * 10); // 0-9
+				// higher
+				if (temp >= 0 && temp < higherChance) // 0-4 or 0-3
+					childGrid[i][j] = higher.grid[i][j];
+				// lower
+				else if (temp >= higherChance && temp < (higherChance + lowerChance)) // 5-8 or 4-6
+					childGrid[i][j] = lower.grid[i][j];
+				else
+					// 9 or 7-9
+					childGrid[i][j] = randomLetter();
 			}
 		}
+
 		// make the child board
 		Boggle child = new Boggle(childGrid, dict);
 		return child;
@@ -254,8 +257,8 @@ public class Boggle implements Comparable {
 	/**
      * @return the sorted list of words in the board
      */
-	public Object[] getWordsSorted() {
-		Object[] words = this.words.toArray();
+	public String[] getWordsSorted() {
+		String[] words = (String[]) this.words.toArray();
 		Arrays.sort(words, new ByStringLength());
 		// convert to array
 		return words;
@@ -310,8 +313,7 @@ public class Boggle implements Comparable {
 	/**
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
-	public int compareTo(Object o) {
-		Boggle that = (Boggle) o;
+	public int compareTo(Boggle that) {
 		if (this.getScore() > that.getScore())
 			return 1;
 		else if (this.getScore() < that.getScore())
