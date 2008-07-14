@@ -11,12 +11,13 @@ public class BoggleClient {
 	private BufferedReader in;
 	private BogglePopulation bp;
 	private Dictionary dict;
+	private Boggle highest;
 
 	private static Pattern pair = Pattern
 	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
 
 	public BoggleClient(String serverAddress, int serverPort, String dictPath,
-	        int sideLength) {
+	        int sideLength, int startingPopulation, int childrenPerCouple, int popCap) {
 		this.sideLength = sideLength;
 		this.serverAddress = serverAddress;
 		this.serverPort = serverPort;
@@ -26,7 +27,7 @@ public class BoggleClient {
 		dict.buildDictionary(dictPath);
 
 		// init population
-		bp = new BogglePopulation(sideLength, 5, 5, 20, dict);
+		bp = new BogglePopulation(sideLength, startingPopulation, childrenPerCouple, popCap, dict);
 	}
 
 	public void connect() {
@@ -47,10 +48,10 @@ public class BoggleClient {
 			try {
 				bp.evolve();
 				
-				for (Boggle b : bp.getCurrentGeneration()) {
-					System.out.println(b.getScore() + " " + b.gridToString());
+				if (highest == null || bp.highest().getScore() > highest.getScore()) {
+					highest = bp.highest();
+					System.out.println(highest.getScore() + " " + highest.gridToString());
 				}
-				System.out.println();
 
 				giveServerOutput();
 				readServerInput();
@@ -68,18 +69,14 @@ public class BoggleClient {
 	private void giveServerOutput() throws GenerationEmptyException {
 		// tell server the score
 		out.println("Score:" + bp.highest().getScore());
-		System.err.println("Score:" + bp.highest().getScore());
-
+		
 		// send a migrant to the server
 		Boggle highest = bp.highest();
 		out.println("Migrant:" + highest.gridToString() + " "
 		        + highest.getScore());
-		System.err.println("Migrant:" + highest.gridToString() + " "
-		        + highest.getScore());
 
 		// end of transmission
 		out.println();
-		System.err.println();
 	}
 
 	private void readServerInput() throws GenerationEmptyException, IOException {

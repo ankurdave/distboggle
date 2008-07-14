@@ -85,12 +85,10 @@ public class BoggleServerThread extends Thread {
 		String migrant = server.getMigrantForClient(clientID);
 		if (migrant != null) {
 			out.println("Migrant: " + migrant);
-			System.err.println("To client " + clientID + ": Migrant: " + migrant);
 		}
 
 		// end the transmission
 		out.println();
-		System.err.println();
 	}
 
 }

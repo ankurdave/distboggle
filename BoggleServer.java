@@ -22,7 +22,7 @@ public class BoggleServer {
      * Network socket that the server uses to communicate.
      */
 	private ServerSocket socket;
-	
+
 	// stats info for gnuplot
 	private int n = 0;
 
@@ -70,7 +70,7 @@ public class BoggleServer {
 				c.setScore(score);
 			}
 		}
-		
+
 		// stats info for gnuplot
 		Collections.sort(clients);
 		System.out.println(n++ + " " + clients.get(0).getScore());
@@ -105,15 +105,15 @@ public class BoggleServer {
 		}
 		return migrant;
 	}
-	
-	 private Client getClient(int clientID) {
-		 for (Client c : clients) {
+
+	private Client getClient(int clientID) {
+		for (Client c : clients) {
 			if (c.getId() == clientID) {
 				return c;
 			}
 		}
 		return null;
-	 }
+	}
 }
 
 class Client implements Comparable<Client> {

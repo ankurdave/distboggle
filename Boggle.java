@@ -37,6 +37,8 @@ public class Boggle implements Comparable<Boggle> {
      */
 	private Dictionary dict;
 
+	private int age = 1;
+
 	/**
      * @param grid
      *            square array of characters from which to construct the board
@@ -110,9 +112,11 @@ public class Boggle implements Comparable<Boggle> {
      * Calculates the score of each board and on each character in the grid,
      * chooses randomly between three choices for the child:
      * <UL>
-     * <LI>use the character from the higher-scoring grid (weighted 5/10, or 4/10 if incestuous)
-     * <LI>use the character from the lower-scoring grid (weighted 4/10, or 3/10 if incestuous)
-     * <LI>use a random character (weighted 1/10, or 3/10 if incestuous)
+     * <LI>use the character from the higher-scoring grid (weighted 6.6/10, or
+     * 6/10 if incestuous)
+     * <LI>use the character from the lower-scoring grid (weighted 3.3/10, or
+     * 3/10 if incestuous)
+     * <LI>use a random character (weighted 0.1/10, or 1/10 if incestuous)
      * </UL>
      * @param that
      *            Boggle board to merge with the calling board
@@ -159,25 +163,27 @@ public class Boggle implements Comparable<Boggle> {
 		}
 		// if they are, mark it as incestuous
 		boolean incest = (float) sameLetters / (sideLength * sideLength) >= 0.85;
-		int higherChance = 5, lowerChance = 4;
+		double higherChance = 6.6, lowerChance = 3.3;
 		if (incest) {
-			higherChance = 4;
+			higherChance = 6;
 			lowerChance = 3;
 		}
 
 		// construct the child grid
-		int temp;
+		double temp;
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
-				temp = (int) (Math.random() * 10); // 0-9
+				temp = Math.random() * 10; // 0-9.9
 				// higher
-				if (temp >= 0 && temp < higherChance) // 0-4 or 0-3
+				if (temp >= 0 && temp < higherChance) // 0-6.6 or 0-6
 					childGrid[i][j] = higher.grid[i][j];
 				// lower
-				else if (temp >= higherChance && temp < (higherChance + lowerChance)) // 5-8 or 4-6
+				else if (temp >= higherChance
+				        && temp < (higherChance + lowerChance)) // 6.6-9.9 or
+                                                                // 6-9
 					childGrid[i][j] = lower.grid[i][j];
 				else
-					// 9 or 7-9
+					// 9.9-10 or 9-10
 					childGrid[i][j] = randomLetter();
 			}
 		}
@@ -334,6 +340,14 @@ public class Boggle implements Comparable<Boggle> {
 		}
 		Boggle thisClone = new Boggle(grid, dict);
 		return thisClone;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void incrementAge() {
+		age++;
 	}
 
 	/**

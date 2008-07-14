@@ -35,6 +35,8 @@ public class BogglePopulation {
      * Dictionary to check possible words against.
      */
 	private Dictionary dict;
+	
+	private static int AGE_LIMIT = 200;
 
 	/**
      * @param sideLength
@@ -100,6 +102,7 @@ public class BogglePopulation {
 			        "not enough Boggles in current generation to evolve");
 		// sort the current generation by score
 		Collections.sort(currentGeneration);
+		
 		// make children
 		ArrayList<Boggle> children = new ArrayList<Boggle>();
 		Boggle parent1;
@@ -116,13 +119,22 @@ public class BogglePopulation {
 				children.add(child);
 			}
 		}
+		
 		// do elitist selection
-		children.add(highest());
+		Boggle highest = currentGeneration.get(currentGeneration.size() - 1); // highest() seems to clone the object or something and so age is not preserved
+		if (highest.getAge() < AGE_LIMIT) {
+			highest.incrementAge();
+			children.add(highest);
+		} else {
+			highest.incrementAge();
+		}
+		
 		// make sure number of children <= popCap by removing the worst few
 		Collections.sort(children);
 		while (children.size() > popCap) {
 			children.remove(0);
 		}
+		
 		// apply changes
 		currentGeneration.clear();
 		currentGeneration.addAll(children);
