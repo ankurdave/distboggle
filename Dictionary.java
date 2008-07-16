@@ -27,11 +27,13 @@ public class Dictionary {
      *            <CODE>String</CODE> to add
      */
 	public void add(String word) {
-		if (word.length() <= 0)
-			return;
+		if (word.length() <= 0) {
+	        return;
+        }
 		for (Letter a : this.children) {
-			if (a == null)
-				continue;
+			if (a == null) {
+	            continue;
+            }
 			if (a.getData() == word.charAt(0)) {
 				a.add(word.substring(1));
 				return;
@@ -55,11 +57,13 @@ public class Dictionary {
 		int index = Collections.binarySearch(this.children, new Letter(word
 		        .charAt(0)));
 		// return false if child matching the first char of word does not exist
-		if (index < 0)
-			return false;
+		if (index < 0) {
+	        return false;
+        }
 		// otherwise, check base case
-		if (word.length() == 1)
-			return true;
+		if (word.length() == 1) {
+	        return true;
+        }
 		// otherwise, traverse recursively
 		return children.get(index).beginsWord(word.substring(1));
 	}
@@ -97,11 +101,13 @@ public class Dictionary {
 		int index = Collections.binarySearch(this.children, new Letter(word
 		        .charAt(0)));
 		// return false if child matching the first char of word does not exist
-		if (index < 0)
-			return false;
+		if (index < 0) {
+	        return false;
+        }
 		// otherwise, check base case
-		if (word.length() == 1)
-			return children.get(index).getEndsWord();
+		if (word.length() == 1) {
+	        return children.get(index).getEndsWord();
+        }
 		// otherwise, traverse recursively
 		return children.get(index).isWord(word.substring(1));
 	}
@@ -113,8 +119,9 @@ public class Dictionary {
 	public String toString() {
 		String s = "Dictionary[]\nchildren=";
 		for (Letter a : this.children) {
-			if (a == null)
-				continue;
+			if (a == null) {
+	            continue;
+            }
 			s += "\n" + a;
 		}
 		return s;
@@ -154,11 +161,13 @@ class Letter extends Dictionary implements Comparable<Letter> {
 			this.endsWord = true;
 			return;
 		}
-		if (word.length() <= 0)
-			return;
+		if (word.length() <= 0) {
+	        return;
+        }
 		for (Letter a : this.children) {
-			if (a == null)
-				continue;
+			if (a == null) {
+	            continue;
+            }
 			if (a.getData() == word.charAt(0)) {
 				a.add(word.substring(1));
 				return;
@@ -171,12 +180,13 @@ class Letter extends Dictionary implements Comparable<Letter> {
 	}
 
 	public int compareTo(Letter that) {
-		if (this.getData() > that.getData())
-			return 1;
-		else if (this.getData() < that.getData())
-			return -1;
-		else
-			return 0;
+		if (this.getData() > that.getData()) {
+	        return 1;
+        } else if (this.getData() < that.getData()) {
+	        return -1;
+        } else {
+	        return 0;
+        }
 	}
 
 	/**
@@ -201,8 +211,9 @@ class Letter extends Dictionary implements Comparable<Letter> {
 		String s = "Letter[data=" + this.data + "; endsWord=" + this.endsWord
 		        + "]\nchildren=";
 		for (Letter a : this.children) {
-			if (a == null)
-				continue;
+			if (a == null) {
+	            continue;
+            }
 			s += "\n" + a;
 		}
 		return s;

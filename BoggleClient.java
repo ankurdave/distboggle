@@ -13,7 +13,7 @@ public class BoggleClient {
 	private Dictionary dict;
 	private Boggle highest;
 
-	private static Pattern pair = Pattern
+	private static final Pattern pair = Pattern
 	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
 
 	public BoggleClient(String serverAddress, int serverPort, String dictPath,
@@ -105,6 +105,8 @@ public class BoggleClient {
 			Boggle migrant = new Boggle(parts[0], sideLength, Integer
 			        .parseInt(parts[1]), dict);
 			bp.add(migrant);
+		} else if (name.equalsIgnoreCase("pop-cap")) {
+			bp.setPopCap(Integer.parseInt(value));
 		}
 	}
 }

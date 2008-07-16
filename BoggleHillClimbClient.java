@@ -42,8 +42,9 @@ public class BoggleHillClimbClient {
 		Boggle trial;
 
 		for (int i = 0;; i++) {
-			if (i % 1000 == 0)
-				System.err.println("Mutation attempt " + i);
+			if (i % 1000 == 0) {
+	            System.err.println("Mutation attempt " + i);
+            }
 			// mutate the current boggle
 			trial = best.mutate(75);
 			trial.generate();

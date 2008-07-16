@@ -86,8 +86,9 @@ public class BoggleTester {
 		// get the output of the computations
 		Object[] words = board.getWordsSorted();
 		// print output
-		for (Object word : words)
-			System.out.println(word);
+		for (Object word : words) {
+	        System.out.println(word);
+        }
 		// print # of words
 		System.out.println(board);
 	}

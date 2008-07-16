@@ -6,6 +6,25 @@ import java.util.Collections;
  * @author ankur
  */
 public class BogglePopulation {
+	private static final int AGE_LIMIT = 200;
+
+	/**
+     * Creates a character grid filled with random uppercase letters.
+     * @param sideLength
+     *            length of one side of the random grid
+     * @return the random grid
+     */
+	public static char[][] randomGrid(int sideLength) {
+		char[][] temp = new char[sideLength][sideLength];
+		for (int i = 0; i < sideLength; i++) {
+	        for (int j = 0; j < sideLength; j++) {
+	            // rand 65-90
+				temp[i][j] = (char) (Math.random() * (90 - 65 + 1) + 65);
+            }
+        }
+		return temp;
+	}
+
 	/**
      * Length of one side of each Boggle board.
      */
@@ -35,8 +54,6 @@ public class BogglePopulation {
      * Dictionary to check possible words against.
      */
 	private Dictionary dict;
-
-	private static int AGE_LIMIT = 200;
 
 	/**
      * @param sideLength
@@ -94,12 +111,31 @@ public class BogglePopulation {
 	}
 
 	/**
+     * Finds the average score of the current generation.
+     * @return the average score of the current generation
+     */
+	public int averageScore() throws GenerationEmptyException {
+		if (numBoggles() <= 0) {
+	        throw new GenerationEmptyException(
+			        "not enough Boggles in current generation to find average");
+        }
+		int counter = 0;
+		int total = 0;
+		for (Boggle b : currentGeneration) {
+			counter++;
+			total += b.getScore();
+		}
+		return total / counter;
+	}
+
+	/**
      * Replaces the current generation of Boggles with their children.
      */
 	public void evolve() throws GenerationEmptyException {
-		if (numBoggles() <= 1)
-			throw new GenerationEmptyException(
+		if (numBoggles() <= 1) {
+	        throw new GenerationEmptyException(
 			        "not enough Boggles in current generation to evolve");
+        }
 		// sort the current generation by score
 		Collections.sort(currentGeneration);
 
@@ -121,20 +157,9 @@ public class BogglePopulation {
 		}
 
 		// do elitist selection
-		Boggle highest = currentGeneration.get(currentGeneration.size() - 1); // highest()
-                                                                                // seems
-                                                                                // to
-                                                                                // clone
-                                                                                // the
-                                                                                // object
-                                                                                // or
-                                                                                // something
-                                                                                // and
-                                                                                // so
-                                                                                // age
-                                                                                // is
-                                                                                // not
-                                                                                // preserved
+		// highest() seems to clone the object or something and so age is not
+        // preserved
+		Boggle highest = currentGeneration.get(currentGeneration.size() - 1);
 		if (highest.getAge() < AGE_LIMIT) {
 			highest.incrementAge();
 			children.add(highest);
@@ -156,23 +181,27 @@ public class BogglePopulation {
 	}
 
 	/**
+     * Accessor method for the current generation of Boggles.
+     * @return the current generation of Boggles
+     */
+	public ArrayList<Boggle> getCurrentGeneration() {
+		return currentGeneration;
+	}
+
+	public int getPopCap() {
+		return popCap;
+	}
+
+	/**
      * Finds the highest-scoring Boggle in the current generation.
      * @return the highest-scoring Boggle in the current generation
      */
 	public Boggle highest() throws GenerationEmptyException {
-		if (numBoggles() <= 0)
-			throw new GenerationEmptyException(
+		if (numBoggles() <= 0) {
+	        throw new GenerationEmptyException(
 			        "not enough Boggles in current generation to find maximum");
+        }
 		return Collections.max(currentGeneration);
-	}
-
-	public Boggle removeHighest() throws GenerationEmptyException {
-		if (numBoggles() <= 0)
-			throw new GenerationEmptyException(
-			        "not enough Boggles in current generation to find maximum");
-		Boggle highest = Collections.max(currentGeneration);
-		currentGeneration.remove(highest);
-		return highest;
 	}
 
 	/**
@@ -180,27 +209,11 @@ public class BogglePopulation {
      * @return the lowest-scoring Boggle in the current generation
      */
 	public Boggle lowest() throws GenerationEmptyException {
-		if (numBoggles() <= 0)
-			throw new GenerationEmptyException(
+		if (numBoggles() <= 0) {
+	        throw new GenerationEmptyException(
 			        "not enough Boggles in current generation to find minimum");
+        }
 		return Collections.min(currentGeneration);
-	}
-
-	/**
-     * Finds the average score of the current generation.
-     * @return the average score of the current generation
-     */
-	public int averageScore() throws GenerationEmptyException {
-		if (numBoggles() <= 0)
-			throw new GenerationEmptyException(
-			        "not enough Boggles in current generation to find average");
-		int counter = 0;
-		int total = 0;
-		for (Boggle b : currentGeneration) {
-			counter++;
-			total += b.getScore();
-		}
-		return total / counter;
 	}
 
 	/**
@@ -211,34 +224,26 @@ public class BogglePopulation {
 		return currentGeneration.size();
 	}
 
-	/**
-     * Creates a character grid filled with random uppercase letters.
-     * @param sideLength
-     *            length of one side of the random grid
-     * @return the random grid
-     */
-	public static char[][] randomGrid(int sideLength) {
-		char[][] temp = new char[sideLength][sideLength];
-		for (int i = 0; i < sideLength; i++)
-			for (int j = 0; j < sideLength; j++)
-				// rand 65-90
-				temp[i][j] = (char) (Math.random() * (90 - 65 + 1) + 65);
-		return temp;
+	public Boggle removeHighest() throws GenerationEmptyException {
+		if (numBoggles() <= 0) {
+	        throw new GenerationEmptyException(
+			        "not enough Boggles in current generation to find maximum");
+        }
+		Boggle highest = Collections.max(currentGeneration);
+		currentGeneration.remove(highest);
+		return highest;
 	}
 
-	/**
-     * Accessor method for the current generation of Boggles.
-     * @return the current generation of Boggles
-     */
-	public ArrayList<Boggle> getCurrentGeneration() {
-		return currentGeneration;
+	public void setPopCap(int popCap) {
+		this.popCap = popCap;
 	}
 
 	/**
      * Represents this BogglePopulation as a String.
      * @return representation of this BogglePopulation
      */
-	public String toString() {
+	@Override
+    public String toString() {
 		String s = "";
 		try {
 			s = generation + " " + highest().getScore() + " " + averageScore()

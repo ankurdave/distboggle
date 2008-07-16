@@ -12,7 +12,8 @@ public class GenerationEmptyException extends Exception {
 		this.message = message;
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return "GenerationEmptyException: " + message;
 	}
 }

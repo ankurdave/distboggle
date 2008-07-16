@@ -26,6 +26,9 @@ public class BoggleServer {
 	// stats info for gnuplot
 	private int n = 0;
 
+	private static final int DEFAULT_POP_CAP = 20;
+	private static final int POP_CAP_RANGE = 20;
+
 	public BoggleServer(int port) {
 		// create the socket
 		socket = null;
@@ -106,6 +109,23 @@ public class BoggleServer {
 		return migrant;
 	}
 
+	public synchronized int getPopCapForClient(int clientID) {
+		Collections.sort(clients);
+
+		if (clients.size() == 1) {
+			return DEFAULT_POP_CAP;
+		}
+
+		for (int i = 0; i < clients.size(); i++) {
+			if (clients.get(i).getId() == clientID) {
+				return (DEFAULT_POP_CAP + POP_CAP_RANGE / 2) - i
+				        * (POP_CAP_RANGE / (clients.size() - 1));
+			}
+		}
+
+		return DEFAULT_POP_CAP;
+	}
+
 	private Client getClient(int clientID) {
 		for (Client c : clients) {
 			if (c.getId() == clientID) {
@@ -165,7 +185,8 @@ class Migrant {
 	public int getScore() {
 		return score;
 	}
-	public String toString() {
+	@Override
+    public String toString() {
 		return grid + " " + score;
 	}
 }

@@ -30,7 +30,7 @@ public class BoggleServerThread extends Thread {
 
 	private BufferedReader in;
 
-	private static Pattern pair = Pattern
+	private static final Pattern pair = Pattern
 	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
 
 	public BoggleServerThread(BoggleServer server, Socket socket) {
@@ -41,7 +41,8 @@ public class BoggleServerThread extends Thread {
 		this.clientID = server.getNextClientID();
 	}
 
-	public void run() {
+	@Override
+    public void run() {
 		try {
 			// init the IO facilities for the socket
 			out = new PrintWriter(socket.getOutputStream(), true);
@@ -86,6 +87,9 @@ public class BoggleServerThread extends Thread {
 		if (migrant != null) {
 			out.println("Migrant: " + migrant);
 		}
+
+		// give the new pop cap
+		out.println("Pop-Cap: " + server.getPopCapForClient(clientID));
 
 		// end the transmission
 		out.println();
