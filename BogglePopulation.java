@@ -17,11 +17,11 @@ public class BogglePopulation {
 	public static char[][] randomGrid(int sideLength) {
 		char[][] temp = new char[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
-	        for (int j = 0; j < sideLength; j++) {
-	            // rand 65-90
+			for (int j = 0; j < sideLength; j++) {
+				// rand 65-90
 				temp[i][j] = (char) (Math.random() * (90 - 65 + 1) + 65);
-            }
-        }
+			}
+		}
 		return temp;
 	}
 
@@ -116,9 +116,9 @@ public class BogglePopulation {
      */
 	public int averageScore() throws GenerationEmptyException {
 		if (numBoggles() <= 0) {
-	        throw new GenerationEmptyException(
+			throw new GenerationEmptyException(
 			        "not enough Boggles in current generation to find average");
-        }
+		}
 		int counter = 0;
 		int total = 0;
 		for (Boggle b : currentGeneration) {
@@ -133,9 +133,9 @@ public class BogglePopulation {
      */
 	public void evolve() throws GenerationEmptyException {
 		if (numBoggles() <= 1) {
-	        throw new GenerationEmptyException(
+			throw new GenerationEmptyException(
 			        "not enough Boggles in current generation to evolve");
-        }
+		}
 		// sort the current generation by score
 		Collections.sort(currentGeneration);
 
@@ -158,7 +158,7 @@ public class BogglePopulation {
 
 		// do elitist selection
 		// highest() seems to clone the object or something and so age is not
-        // preserved
+		// preserved
 		Boggle highest = currentGeneration.get(currentGeneration.size() - 1);
 		if (highest.getAge() < AGE_LIMIT) {
 			highest.incrementAge();
@@ -188,6 +188,10 @@ public class BogglePopulation {
 		return currentGeneration;
 	}
 
+	public int getGeneration() {
+		return generation;
+	}
+
 	public int getPopCap() {
 		return popCap;
 	}
@@ -198,9 +202,9 @@ public class BogglePopulation {
      */
 	public Boggle highest() throws GenerationEmptyException {
 		if (numBoggles() <= 0) {
-	        throw new GenerationEmptyException(
+			throw new GenerationEmptyException(
 			        "not enough Boggles in current generation to find maximum");
-        }
+		}
 		return Collections.max(currentGeneration);
 	}
 
@@ -210,9 +214,9 @@ public class BogglePopulation {
      */
 	public Boggle lowest() throws GenerationEmptyException {
 		if (numBoggles() <= 0) {
-	        throw new GenerationEmptyException(
+			throw new GenerationEmptyException(
 			        "not enough Boggles in current generation to find minimum");
-        }
+		}
 		return Collections.min(currentGeneration);
 	}
 
@@ -226,9 +230,9 @@ public class BogglePopulation {
 
 	public Boggle removeHighest() throws GenerationEmptyException {
 		if (numBoggles() <= 0) {
-	        throw new GenerationEmptyException(
+			throw new GenerationEmptyException(
 			        "not enough Boggles in current generation to find maximum");
-        }
+		}
 		Boggle highest = Collections.max(currentGeneration);
 		currentGeneration.remove(highest);
 		return highest;
@@ -243,7 +247,7 @@ public class BogglePopulation {
      * @return representation of this BogglePopulation
      */
 	@Override
-    public String toString() {
+	public String toString() {
 		String s = "";
 		try {
 			s = generation + " " + highest().getScore() + " " + averageScore()

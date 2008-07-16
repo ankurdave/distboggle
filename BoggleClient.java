@@ -53,12 +53,14 @@ public class BoggleClient {
 				if (highest == null
 				        || bp.highest().getScore() > highest.getScore()) {
 					highest = bp.highest();
-					System.out.println(highest.getScore() + " "
-					        + highest.gridToString());
 				}
 
 				giveServerOutput();
 				readServerInput();
+
+				System.out.println("Gen " + bp.getGeneration() + ": pop cap="
+				        + bp.getPopCap() + "; all time highest="
+				        + highest.getScore() + " " + highest.gridToString());
 			}
 			catch (GenerationEmptyException e) {
 				break;

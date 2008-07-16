@@ -57,10 +57,10 @@ public class Boggle implements Comparable<Boggle> {
 		// make board from grid
 		board = new Letter[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
-	        for (int j = 0; j < sideLength; j++) {
-	            board[i][j] = new Letter(grid[i][j], i, j);
-            }
-        }
+			for (int j = 0; j < sideLength; j++) {
+				board[i][j] = new Letter(grid[i][j], i, j);
+			}
+		}
 	}
 
 	/**
@@ -80,10 +80,10 @@ public class Boggle implements Comparable<Boggle> {
 		// make board from grid
 		board = new Letter[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
-	        for (int j = 0; j < sideLength; j++) {
-	            board[i][j] = new Letter(grid[i][j], i, j);
-            }
-        }
+			for (int j = 0; j < sideLength; j++) {
+				board[i][j] = new Letter(grid[i][j], i, j);
+			}
+		}
 	}
 
 	public Boggle(String s, int sideLength, int score, Dictionary dict) {
@@ -107,10 +107,10 @@ public class Boggle implements Comparable<Boggle> {
 		// make board from grid
 		board = new Letter[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
-	        for (int j = 0; j < sideLength; j++) {
-	            board[i][j] = new Letter(grid[i][j], i, j);
-            }
-        }
+			for (int j = 0; j < sideLength; j++) {
+				board[i][j] = new Letter(grid[i][j], i, j);
+			}
+		}
 	}
 
 	/**
@@ -130,8 +130,8 @@ public class Boggle implements Comparable<Boggle> {
      */
 	public Boggle merge(Boggle that) {
 		if (this.sideLength != that.sideLength) {
-	        return null;
-        }
+			return null;
+		}
 
 		// init child
 		char[][] childGrid = new char[sideLength][sideLength];
@@ -183,15 +183,15 @@ public class Boggle implements Comparable<Boggle> {
 				temp = Math.random() * 10; // 0-9.9
 				// higher
 				if (temp >= 0 && temp < higherChance) {
-	                childGrid[i][j] = higher.grid[i][j];
-                } else if (temp >= higherChance
+					childGrid[i][j] = higher.grid[i][j];
+				} else if (temp >= higherChance
 				        && temp < (higherChance + lowerChance)) {
-	                // 6-9
+					// 6-9
 					childGrid[i][j] = lower.grid[i][j];
-                } else {
-	                // 9.9-10 or 9-10
+				} else {
+					// 9.9-10 or 9-10
 					childGrid[i][j] = randomLetter();
-                }
+				}
 			}
 		}
 
@@ -207,10 +207,10 @@ public class Boggle implements Comparable<Boggle> {
 		// on each of the letters of the board
 		// traverse the possible words recursively
 		for (int i = 0; i < sideLength; i++) {
-	        for (int j = 0; j < sideLength; j++) {
-	            board[i][j].traverse("");
-            }
-        }
+			for (int j = 0; j < sideLength; j++) {
+				board[i][j].traverse("");
+			}
+		}
 		int score = 0;
 		Object[] words = getWords().toArray();
 		for (Object word : words) {
@@ -218,20 +218,20 @@ public class Boggle implements Comparable<Boggle> {
 			int length = wordString.length();
 			// minimum length is 3
 			if (length < 3) {
-	            continue;
-            }
+				continue;
+			}
 			// calculate score
 			if (length == 3 || length == 4) {
-	            score += 1;
-            } else if (length == 5) {
-	            score += 2;
-            } else if (length == 6) {
-	            score += 3;
-            } else if (length == 7) {
-	            score += 5;
-            } else if (length >= 8) {
-	            score += 11;
-            }
+				score += 1;
+			} else if (length == 5) {
+				score += 2;
+			} else if (length == 6) {
+				score += 3;
+			} else if (length == 7) {
+				score += 5;
+			} else if (length >= 8) {
+				score += 11;
+			}
 		}
 		this.score = score;
 	}
@@ -248,10 +248,10 @@ public class Boggle implements Comparable<Boggle> {
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
 				if ((int) (Math.random() * 100) < mutationProbability) {
-	                gridMutated[i][j] = randomLetter();
-                } else {
-	                gridMutated[i][j] = grid[i][j];
-                }
+					gridMutated[i][j] = randomLetter();
+				} else {
+					gridMutated[i][j] = grid[i][j];
+				}
 			}
 		}
 		Boggle thisMutated = new Boggle(gridMutated, dict);
@@ -307,7 +307,7 @@ public class Boggle implements Comparable<Boggle> {
      * @see java.lang.Object#toString()
      */
 	@Override
-    public String toString() {
+	public String toString() {
 		String s = "Boggle[" + "sideLength=" + sideLength + "; " + "score="
 		        + getScore() + "; " + "grid=";
 		for (char c[] : grid) {
@@ -334,19 +334,19 @@ public class Boggle implements Comparable<Boggle> {
      */
 	public int compareTo(Boggle that) {
 		if (this.getScore() > that.getScore()) {
-	        return 1;
-        } else if (this.getScore() < that.getScore()) {
-	        return -1;
-        } else {
-	        return 0;
-        }
+			return 1;
+		} else if (this.getScore() < that.getScore()) {
+			return -1;
+		} else {
+			return 0;
+		}
 	}
 
 	/**
      * @see java.lang.Object#clone()
      */
 	@Override
-    public Boggle clone() {
+	public Boggle clone() {
 		Letter[][] boardClone = new Letter[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
@@ -448,13 +448,13 @@ public class Boggle implements Comparable<Boggle> {
 		public void traverse(String soFar) {
 			// don't traverse if this has already been used
 			if (hasBeenHit) {
-	            return;
-            }
+				return;
+			}
 			soFar += data;
 			// don't traverse deeper if it doesn't begin a word so far
 			if (!dict.beginsWord(soFar.toLowerCase())) {
-	            return;
-            }
+				return;
+			}
 			// only add it to the found words if it's longer than 2 chars and is
 			// a word
 			if (soFar.length() > 2 && dict.isWord(soFar.toLowerCase())) {
@@ -466,40 +466,40 @@ public class Boggle implements Comparable<Boggle> {
 			// traverse each Letter around this one recursively
 			// Letter above
 			if (Y - 1 >= 0 && Y - 1 < sideLength) {
-	            board[X][Y - 1].traverse(soFar);
-            }
+				board[X][Y - 1].traverse(soFar);
+			}
 			// Letter below
 			if (Y + 1 >= 0 && Y + 1 < sideLength) {
-	            board[X][Y + 1].traverse(soFar);
-            }
+				board[X][Y + 1].traverse(soFar);
+			}
 			// Letter right
 			if (X + 1 >= 0 && X + 1 < sideLength) {
-	            board[X + 1][Y].traverse(soFar);
-            }
+				board[X + 1][Y].traverse(soFar);
+			}
 			// Letter left
 			if (X - 1 >= 0 && X - 1 < sideLength) {
-	            board[X - 1][Y].traverse(soFar);
-            }
+				board[X - 1][Y].traverse(soFar);
+			}
 			// Letter up-left
 			if (X - 1 >= 0 && X - 1 < sideLength && Y - 1 >= 0
 			        && Y - 1 < sideLength) {
-	            board[X - 1][Y - 1].traverse(soFar);
-            }
+				board[X - 1][Y - 1].traverse(soFar);
+			}
 			// Letter up-right
 			if (X + 1 >= 0 && X + 1 < sideLength && Y - 1 >= 0
 			        && Y - 1 < sideLength) {
-	            board[X + 1][Y - 1].traverse(soFar);
-            }
+				board[X + 1][Y - 1].traverse(soFar);
+			}
 			// Letter down-left
 			if (X - 1 >= 0 && X - 1 < sideLength && Y + 1 >= 0
 			        && Y + 1 < sideLength) {
-	            board[X - 1][Y + 1].traverse(soFar);
-            }
+				board[X - 1][Y + 1].traverse(soFar);
+			}
 			// Letter down-right
 			if (X + 1 >= 0 && X + 1 < sideLength && Y + 1 >= 0
 			        && Y + 1 < sideLength) {
-	            board[X + 1][Y + 1].traverse(soFar);
-            }
+				board[X + 1][Y + 1].traverse(soFar);
+			}
 			// now that this word attempt has finished, it's OK for other
 			// letters to traverse onto this one
 			hasBeenHit = false;
@@ -509,7 +509,7 @@ public class Boggle implements Comparable<Boggle> {
          * @see java.lang.Object#clone()
          */
 		@Override
-        public Letter clone() {
+		public Letter clone() {
 			Letter thisClone = new Letter(data, X, Y);
 			thisClone.setHasBeenHit(hasBeenHit);
 			return thisClone;
@@ -519,21 +519,21 @@ public class Boggle implements Comparable<Boggle> {
          * @see java.lang.Object#equals(java.lang.Object)
          */
 		@Override
-        public boolean equals(Object o) {
+		public boolean equals(Object o) {
 			Letter that = (Letter) o;
 			if (this.getData() == that.getData() && this.getX() == that.getX()
 			        && this.getY() == that.getY()) {
-	            return true;
-            } else {
-	            return false;
-            }
+				return true;
+			} else {
+				return false;
+			}
 		}
 
 		/**
          * @see java.lang.Object#toString()
          */
 		@Override
-        public String toString() {
+		public String toString() {
 			return "Letter[" + "data=" + getData() + "; " + "X=" + getX()
 			        + "; " + "Y=" + getY() + "; " + "hasBeenHit="
 			        + getHasBeenHit() + "]";

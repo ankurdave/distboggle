@@ -186,7 +186,7 @@ class Migrant {
 		return score;
 	}
 	@Override
-    public String toString() {
+	public String toString() {
 		return grid + " " + score;
 	}
 }

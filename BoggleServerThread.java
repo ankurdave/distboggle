@@ -42,7 +42,7 @@ public class BoggleServerThread extends Thread {
 	}
 
 	@Override
-    public void run() {
+	public void run() {
 		try {
 			// init the IO facilities for the socket
 			out = new PrintWriter(socket.getOutputStream(), true);

@@ -14,8 +14,8 @@ public class BoggleHillClimber {
 		Boggle trial;
 		for (int i = 2;; i++) {
 			if (i % 1000 == 0) {
-	            System.out.println("# Mutation attempt " + i);
-            }
+				System.out.println("# Mutation attempt " + i);
+			}
 			trial = best.mutate(50);
 			trial.generate();
 			// replace best with trial if trial is better
