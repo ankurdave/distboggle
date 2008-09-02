@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Scanner;
 
 /**
@@ -44,9 +46,22 @@ public class BogglePopulationTester {
 		dict.buildDictionary(path);
 		// make a BogglePopulation
 		BogglePopulation bp = new BogglePopulation(SIDE_LENGTH, 5, 5, 20, dict);
-		for (int i = 1;; i++) {
+		// set up timer
+		Calendar c = Calendar.getInstance();
+		int start = c.getTime().getMinutes() * 60 + c.getTime().getSeconds();
+		while (true) {
+			c = Calendar.getInstance();
+			int now = c.getTime().getMinutes() * 60 + c.getTime().getSeconds();
+			System.out.println(now - start);
+			if (now - start >= 60) {
+				break;
+			}
 			System.out.println(bp);
 			try {
+				ArrayList<Boggle> gen = bp.getCurrentGeneration();
+				for (int i = 0; i < gen.size(); i++) {
+					System.err.println(Integer.toString(bp.getGeneration()) + "\t" + i + "\t" + gen.get(i).getScore());
+				}
 				bp.evolve();
 			}
 			catch (GenerationEmptyException e) {
