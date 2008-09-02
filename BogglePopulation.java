@@ -241,6 +241,10 @@ public class BogglePopulation {
 	public void setPopCap(int popCap) {
 		this.popCap = popCap;
 	}
+	
+	public Boggle random() {
+		return currentGeneration.get((int)(Math.random() * numBoggles()));
+	}
 
 	/**
      * Represents this BogglePopulation as a String.

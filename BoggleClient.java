@@ -77,7 +77,7 @@ public class BoggleClient {
 		out.println("Score:" + bp.highest().getScore());
 
 		// send a migrant to the server
-		Boggle highest = bp.highest();
+		Boggle highest = bp.random();
 		out.println("Migrant:" + highest.gridToString() + " "
 		        + highest.getScore());
 
