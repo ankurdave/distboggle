@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-
 /**
  * Tests the BoggleEvolution class. Takes as command line arguments:
  * dictionaryPath [sideLength [-]]
@@ -11,7 +9,7 @@ public class BogglePopulationTester {
      * @param args
      *            arguments to the program
      */
-	static int SIDE_LENGTH = 4, START_POP = 5, POP_CAP = 20, AVG_CHILDREN_PER_COUPLE = 5;
+	static int SIDE_LENGTH = 4, START_POP = 20, POP_CAP = 20, AVG_CHILDREN_PER_COUPLE = 2;
 	static String DICT_PATH = "words.txt";
 	
 
@@ -35,13 +33,13 @@ public class BogglePopulationTester {
 				break;
 			}
 			
-			System.out.println(bp);			
+/*			System.out.println(bp);			
 			ArrayList<Boggle> gen = bp.getCurrentGeneration();
             for (int i = 0; i < gen.size(); i++) {
                     System.err.println(gen.get(i).gridToString() + " " + gen.get(i).getScore());
             }
-
-//			System.out.println(bp.getGeneration() + " " + bp.highest().getScore() + " " + bp.averageScore() + " " + bp.lowest().getScore());
+*/
+			System.out.println(bp.getGeneration() + " " + bp.highest().getScore() + " " + bp.averageScore() + " " + bp.lowest().getScore());
 		}
 		
 		// stop the timer

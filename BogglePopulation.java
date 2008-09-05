@@ -148,7 +148,9 @@ public class BogglePopulation {
 		// make, on average, childrenPerCouple children per couple
 		for (int i = 0; i < childrenPerCouple * currentGeneration.size(); i++) {  		
 			parent1 = weightedRandomFromList(currentGeneration);
-			parent2 = weightedRandomFromList(currentGeneration);
+			do {
+				parent2 = weightedRandomFromList(currentGeneration);
+			} while (parent1 == parent2);
 			child = parent1.merge(parent2);
 			children.add(child);
 		}
@@ -208,8 +210,9 @@ public class BogglePopulation {
 	
 	/** Taken from http://www.perlmonks.org/?node_id=158482
 	 * How it works: on the first iteration, the if will always be true,
-	 * establishing the first Boggle as the random one. On successive iterations,
-	 * every other Boggle gets a weighted chance at replacing the previous Boggle.
+	 * establishing the first Boggle as the random one (unless the first boggle scores 0).
+	 * On successive iterations, every other Boggle gets a weighted chance at
+	 * replacing the previous Boggle.
 	 */
 	private Boggle weightedRandomFromList(List<Boggle> list) {
 		int sum = 0;
