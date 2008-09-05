@@ -27,7 +27,7 @@ public class BoggleServer {
 	private int n = 0;
 
 	private static final int DEFAULT_POP_CAP = 20;
-	private static final int POP_CAP_RANGE = 20;
+	private static final int POP_CAP_RANGE = 0;
 
 	public BoggleServer(int port) {
 		// create the socket

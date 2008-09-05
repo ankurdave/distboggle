@@ -83,13 +83,13 @@ public class BoggleTester {
 		// make the Boggle board from the above information
 		Boggle board = new Boggle(grid, path);
 		board.generate();
-		// get the output of the computations
+/*		// get the output of the computations
 		Object[] words = board.getWordsSorted();
 		// print output
 		for (Object word : words) {
 			System.out.println(word);
 		}
-		// print # of words
+*/		// print # of words
 		System.out.println(board);
 	}
 }

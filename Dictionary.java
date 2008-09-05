@@ -74,7 +74,7 @@ public class Dictionary {
      *            location of the newline-separated dictionary file
      */
 	public void buildDictionary(String path) {
-		System.out.print("Building dictionary...");
+		System.err.print("Building dictionary...");
 		// read dictionary file
 		try {
 			String temp;
@@ -88,7 +88,7 @@ public class Dictionary {
 			System.out.println("file " + path + " not found!");
 			System.exit(-1);
 		}
-		System.out.println("done.");
+		System.err.println("done.");
 	}
 
 	/**

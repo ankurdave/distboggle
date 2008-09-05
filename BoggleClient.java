@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,6 +62,11 @@ public class BoggleClient {
 				System.out.println("Gen " + bp.getGeneration() + ": pop cap="
 				        + bp.getPopCap() + "; all time highest="
 				        + highest.getScore() + " " + highest.gridToString());
+				ArrayList<Boggle> gen = bp.getCurrentGeneration();
+				for (Boggle b : gen) {
+					System.out.println(b.gridToString() + " " + b.getScore());
+				}
+				System.out.println();
 			}
 			catch (GenerationEmptyException e) {
 				break;
@@ -76,12 +82,16 @@ public class BoggleClient {
 		// tell server the score
 		out.println("Score:" + bp.highest().getScore());
 
-		if (Math.random() < 0.1) {
-			// send a migrant to the server
-			Boggle highest = bp.highest();
-			out.println("Migrant:" + highest.gridToString() + " "
-			        + highest.getScore());
+		// send a migrant to the server
+		Boggle migrant;
+		if (Math.random() < 0.25) {
+			migrant = bp.highest();
+		} else {
+			migrant = bp.random();
 		}
+		
+		out.println("Migrant:" + migrant.gridToString() + " "
+		        + migrant.getScore());
 
 		// end of transmission
 		out.println();

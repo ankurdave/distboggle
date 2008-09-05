@@ -6,23 +6,41 @@
  */
 public class BoggleHillClimber {
 	public static void main(String[] args) {
+		// create the starting Boggle 
 		char[][] start = BogglePopulation.randomGrid(4);
 		Dictionary dict = new Dictionary();
 		dict.buildDictionary("words.txt");
-		Boggle best = new Boggle(start, dict);
-		best.generate();
+		Boggle current = new Boggle(start, dict);
+		
+		current.generate(); // find score of current Boggle
+		
 		Boggle trial;
-		for (int i = 2;; i++) {
+		System.err.println("#" + current.getScore() + " " + current.gridToString());
+		
+		// start the timer
+		long startTime = System.currentTimeMillis();
+		
+		// begin hill climbing
+		System.out.println("0 " + current.getScore());
+		int i = 1, lastImproved = 1;
+		while ((i - lastImproved) < 5000 && current.getScore() < 3500) {
 			if (i % 1000 == 0) {
-				System.out.println("# Mutation attempt " + i);
+				System.err.println("# Mutation attempt " + i);
 			}
-			trial = best.mutate(50);
+			trial = current.mutate(10);
 			trial.generate();
-			// replace best with trial if trial is better
-			if (trial.getScore() > best.getScore()) {
-				best = trial;
-				System.out.println(i + " " + best.getScore());
+			if (trial.getScore() > current.getScore()) {
+				current = trial;
+				lastImproved = i;
+				System.out.println(i + " " + current.getScore());
 			}
+			i++;
 		}
+		
+		// start the timer
+		long stopTime = System.currentTimeMillis();
+		
+		System.err.println("#" + current.getScore() + " " + current.gridToString());
+		System.err.println("# Time elapsed (ms): " + (stopTime - startTime));
 	}
 }

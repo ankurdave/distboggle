@@ -6,7 +6,7 @@ import java.util.Collections;
  * @author ankur
  */
 public class BogglePopulation {
-	private static final int AGE_LIMIT = 200;
+	private static final int AGE_LIMIT = 5;
 
 	/**
      * Creates a character grid filled with random uppercase letters.
@@ -151,7 +151,6 @@ public class BogglePopulation {
 			// mate them childrenPerCouple times
 			for (int j = 0; j < childrenPerCouple; j++) {
 				child = parent1.merge(parent2);
-				child.generate();
 				children.add(child);
 			}
 		}
@@ -167,6 +166,19 @@ public class BogglePopulation {
 			highest.incrementAge();
 		}
 
+		// make sure there are no duplicates, then rank the boggles
+		ArrayList<String> uniqueGrids = new ArrayList<String>();
+		for (int i = 0; i < children.size(); i++) {
+			Boggle b = children.get(i);
+			if (uniqueGrids.contains(b.gridToString())) {
+				children.remove(b);
+				continue;
+			} else {
+				uniqueGrids.add(b.gridToString());
+			}
+			b.generate();
+		}
+		
 		// make sure number of children <= popCap by removing the worst few
 		Collections.sort(children);
 		while (children.size() > popCap) {
