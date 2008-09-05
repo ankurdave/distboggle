@@ -37,7 +37,7 @@ public class BoggleHillClimber {
 			i++;
 		}
 		
-		// start the timer
+		// stop the timer
 		long stopTime = System.currentTimeMillis();
 		
 		System.err.println("#" + current.getScore() + " " + current.gridToString());

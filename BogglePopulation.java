@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Simulates the evolution of a population of Boggles.
@@ -144,16 +145,24 @@ public class BogglePopulation {
 		Boggle parent1;
 		Boggle parent2;
 		Boggle child;
-		for (int i = 0; i < this.numBoggles() - 1; i += 2) {
-			// get the next two parents
-			parent1 = currentGeneration.get(i);
-			parent2 = currentGeneration.get(i + 1);
-			// mate them childrenPerCouple times
-			for (int j = 0; j < childrenPerCouple; j++) {
-				child = parent1.merge(parent2);
-				children.add(child);
-			}
+		// make, on average, childrenPerCouple children per couple
+		for (int i = 0; i < childrenPerCouple * currentGeneration.size(); i++) {  		
+			parent1 = weightedRandomFromList(currentGeneration);
+			parent2 = weightedRandomFromList(currentGeneration);
+			child = parent1.merge(parent2);
+			children.add(child);
 		}
+/*		 for (int i = 0; i < this.numBoggles() - 1; i += 2) {
+             // get the next two parents
+             parent1 = currentGeneration.get(i);
+             parent2 = currentGeneration.get(i + 1);
+             // mate them childrenPerCouple times
+             for (int j = 0; j < childrenPerCouple; j++) {
+                     child = parent1.merge(parent2);
+                     children.add(child);
+             }
+     }
+*/
 
 		// do elitist selection
 		// highest() seems to clone the object or something and so age is not
@@ -178,18 +187,53 @@ public class BogglePopulation {
 			}
 			b.generate();
 		}
-		
-		// make sure number of children <= popCap by removing the worst few
+	
+		// reduce number of children to popCap through weighted random selection
+		Collections.sort(children);
+		while (children.size() > popCap) {
+			children.remove(weightedRandomWorstFromList(children));
+		}
+/*		// make sure number of children <= popCap by removing the worst few
 		Collections.sort(children);
 		while (children.size() > popCap) {
 			children.remove(0);
 		}
-
+*/
 		// apply changes
 		currentGeneration.clear();
 		currentGeneration.addAll(children);
 		// record generation change
 		generation++;
+	}
+	
+	/** Taken from http://www.perlmonks.org/?node_id=158482
+	 * How it works: on the first iteration, the if will always be true,
+	 * establishing the first Boggle as the random one. On successive iterations,
+	 * every other Boggle gets a weighted chance at replacing the previous Boggle.
+	 */
+	private Boggle weightedRandomFromList(List<Boggle> list) {
+		int sum = 0;
+		Boggle result = null;
+		for (Boggle b : list) {
+			if (Math.random() * (sum += b.getScore()) < b.getScore()) {
+				result = b;
+			}
+		}
+		assert result != null;
+		return result;
+	}
+	
+	private Boggle weightedRandomWorstFromList(List<Boggle> list) {
+		int sum = 0;
+		Boggle result = null;
+		int maxScore = Collections.max(list).getScore();
+		for (Boggle b : list) {
+			if (Math.random() * (sum += (maxScore - b.getScore())) < (maxScore - b.getScore())) {
+				result = b;
+			}
+		}
+		assert result != null;
+		return result;
 	}
 
 	/**
