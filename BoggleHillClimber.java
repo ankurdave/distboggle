@@ -1,3 +1,4 @@
+
 /**
  * Attempts to find a high-scoring Boggle board by mutating the characters of a
  * Boggle board and checking if the resulting mutant scores higher than the
@@ -7,7 +8,7 @@
 public class BoggleHillClimber {
 	public static void main(String[] args) {
 		// create the starting Boggle 
-		char[][] start = BogglePopulation.randomGrid(4);
+		char[][] start = BoggleUtil.randomGrid(4);
 		Dictionary dict = new Dictionary();
 		dict.buildDictionary("words.txt");
 		Boggle current = new Boggle(start, dict);
@@ -21,18 +22,15 @@ public class BoggleHillClimber {
 		long startTime = System.currentTimeMillis();
 		
 		// begin hill climbing
-		System.out.println("0 " + current.getScore());
+//		System.out.println("0 " + current.getScore());
 		int i = 1, lastImproved = 1;
-		while ((i - lastImproved) < 5000 && current.getScore() < 3500) {
-			if (i % 1000 == 0) {
-				System.err.println("# Mutation attempt " + i);
-			}
+		while ((i - lastImproved) < 20000 && current.getScore() < 3500) {
 			trial = current.mutate(10);
 			trial.generate();
 			if (trial.getScore() > current.getScore()) {
 				current = trial;
 				lastImproved = i;
-				System.out.println(i + " " + current.getScore());
+//				System.out.println(i + " " + current.getScore());
 			}
 			i++;
 		}

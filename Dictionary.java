@@ -1,3 +1,4 @@
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -74,7 +75,6 @@ public class Dictionary {
      *            location of the newline-separated dictionary file
      */
 	public void buildDictionary(String path) {
-		System.err.print("Building dictionary...");
 		// read dictionary file
 		try {
 			String temp;
@@ -88,7 +88,6 @@ public class Dictionary {
 			System.out.println("file " + path + " not found!");
 			System.exit(-1);
 		}
-		System.err.println("done.");
 	}
 
 	/**

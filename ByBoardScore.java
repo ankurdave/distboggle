@@ -1,3 +1,4 @@
+
 import java.util.Comparator;
 
 public class ByBoardScore implements Comparator<String> {

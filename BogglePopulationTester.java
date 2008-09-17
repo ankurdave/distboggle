@@ -1,3 +1,6 @@
+
+import java.util.ArrayList;
+
 /**
  * Tests the BoggleEvolution class. Takes as command line arguments:
  * dictionaryPath [sideLength [-]]
@@ -9,22 +12,22 @@ public class BogglePopulationTester {
      * @param args
      *            arguments to the program
      */
-	static int SIDE_LENGTH = 4, START_POP = 20, POP_CAP = 20, AVG_CHILDREN_PER_COUPLE = 2;
+	static int SIDE_LENGTH = 4, START_POP = 20, POP_CAP = 20, AVG_CHILDREN_PER_COUPLE = 5;
 	static String DICT_PATH = "words.txt";
-	
 
 	public static void main(String[] args) throws GenerationEmptyException {
 		// initialize population
 		Dictionary dict = new Dictionary();
 		dict.buildDictionary(DICT_PATH);
 		BogglePopulation bp = new BogglePopulation(SIDE_LENGTH, START_POP, AVG_CHILDREN_PER_COUPLE, POP_CAP, dict);
-		System.out.println(bp.getGeneration() + " " + bp.highest().getScore() + " " + bp.averageScore() + bp.lowest().getScore());
 
 		// start timer
 		long startTime = System.currentTimeMillis();
 		
+		Boggle highest = bp.highest();
+		
 		// start evolution
-		while (bp.highest().getScore() < 3500) {
+		do {
 			try {
 				bp.evolve();
 			}
@@ -33,19 +36,23 @@ public class BogglePopulationTester {
 				break;
 			}
 			
+			if (highest.compareTo(bp.highest()) < 0) {
+				highest = bp.highest();
+//				System.out.print(highest.getScore() + " ");
+			}
+			
 /*			System.out.println(bp);			
 			ArrayList<Boggle> gen = bp.getCurrentGeneration();
             for (int i = 0; i < gen.size(); i++) {
                     System.err.println(gen.get(i).gridToString() + " " + gen.get(i).getScore());
             }
 */
-			System.out.println(bp.getGeneration() + " " + bp.highest().getScore() + " " + bp.averageScore() + " " + bp.lowest().getScore());
-		}
+		} while ((highest.getScore() < 3500) && (System.currentTimeMillis() - startTime < 1000000));
 		
 		// stop the timer
 		long stopTime = System.currentTimeMillis();
 		
-		System.err.println("#" + bp.highest().gridToString() + " " + bp.highest().getScore());
-		System.err.println("# Time elapsed (ms): " + (stopTime - startTime));
+//		System.out.println();
+		System.out.println(highest.gridToString() + " " + highest.getScore()+ " " + (stopTime - startTime));
 	}
 }

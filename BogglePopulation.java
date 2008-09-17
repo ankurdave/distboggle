@@ -1,5 +1,7 @@
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -8,23 +10,6 @@ import java.util.List;
  */
 public class BogglePopulation {
 	private static final int AGE_LIMIT = 5;
-
-	/**
-     * Creates a character grid filled with random uppercase letters.
-     * @param sideLength
-     *            length of one side of the random grid
-     * @return the random grid
-     */
-	public static char[][] randomGrid(int sideLength) {
-		char[][] temp = new char[sideLength][sideLength];
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
-				// rand 65-90
-				temp[i][j] = (char) (Math.random() * (90 - 65 + 1) + 65);
-			}
-		}
-		return temp;
-	}
 
 	/**
      * Length of one side of each Boggle board.
@@ -85,7 +70,7 @@ public class BogglePopulation {
 		currentGeneration = new ArrayList<Boggle>();
 		Boggle temp;
 		for (int i = 0; i < startingPopulation; i++) {
-			temp = new Boggle(randomGrid(sideLength), dict);
+			temp = new Boggle(BoggleUtil.randomGrid(sideLength), dict);
 			temp.generate();
 			currentGeneration.add(temp);
 		}
@@ -145,7 +130,7 @@ public class BogglePopulation {
 		Boggle parent1;
 		Boggle parent2;
 		Boggle child;
-		// make, on average, childrenPerCouple children per couple
+/*		// make, on average, childrenPerCouple children per couple
 		for (int i = 0; i < childrenPerCouple * currentGeneration.size(); i++) {  		
 			parent1 = weightedRandomFromList(currentGeneration);
 			do {
@@ -154,7 +139,7 @@ public class BogglePopulation {
 			child = parent1.merge(parent2);
 			children.add(child);
 		}
-/*		 for (int i = 0; i < this.numBoggles() - 1; i += 2) {
+*/		 for (int i = 0; i < this.numBoggles() - 1; i += 2) {
              // get the next two parents
              parent1 = currentGeneration.get(i);
              parent2 = currentGeneration.get(i + 1);
@@ -164,21 +149,20 @@ public class BogglePopulation {
                      children.add(child);
              }
      }
-*/
 
 		// do elitist selection
 		// highest() seems to clone the object or something and so age is not
 		// preserved
 		Boggle highest = currentGeneration.get(currentGeneration.size() - 1);
-		if (highest.getAge() < AGE_LIMIT) {
-			highest.incrementAge();
+//		if (highest.getAge() < AGE_LIMIT) {
+//			highest.incrementAge();
 			children.add(highest);
-		} else {
-			highest.incrementAge();
-		}
+//		} else {
+//			highest.incrementAge();
+//		}
 
 		// make sure there are no duplicates, then rank the boggles
-		ArrayList<String> uniqueGrids = new ArrayList<String>();
+		HashSet<String> uniqueGrids = new HashSet<String>();
 		for (int i = 0; i < children.size(); i++) {
 			Boggle b = children.get(i);
 			if (uniqueGrids.contains(b.gridToString())) {
@@ -192,15 +176,15 @@ public class BogglePopulation {
 	
 		// reduce number of children to popCap through weighted random selection
 		Collections.sort(children);
-		while (children.size() > popCap) {
+/*		while (children.size() > popCap) {
 			children.remove(weightedRandomWorstFromList(children));
 		}
-/*		// make sure number of children <= popCap by removing the worst few
+*/		// make sure number of children <= popCap by removing the worst few
 		Collections.sort(children);
 		while (children.size() > popCap) {
 			children.remove(0);
 		}
-*/
+
 		// apply changes
 		currentGeneration.clear();
 		currentGeneration.addAll(children);
@@ -218,7 +202,7 @@ public class BogglePopulation {
 		int sum = 0;
 		Boggle result = null;
 		for (Boggle b : list) {
-			if (Math.random() * (sum += b.getScore()) < b.getScore()) {
+			if (Math.random() * (sum += b.getScore() * b.getScore()) < b.getScore() * b.getScore()) {
 				result = b;
 			}
 		}
@@ -230,8 +214,9 @@ public class BogglePopulation {
 		int sum = 0;
 		Boggle result = null;
 		int maxScore = Collections.max(list).getScore();
+		maxScore *= maxScore;
 		for (Boggle b : list) {
-			if (Math.random() * (sum += (maxScore - b.getScore())) < (maxScore - b.getScore())) {
+			if (Math.random() * (sum += (maxScore - b.getScore() * b.getScore())) < (maxScore - b.getScore() * b.getScore())) {
 				result = b;
 			}
 		}
