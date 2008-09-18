@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,37 +9,37 @@ import java.util.List;
  */
 public class BogglePopulation {
 	private static final int AGE_LIMIT = 5;
-
+	
 	/**
      * Length of one side of each Boggle board.
      */
 	private int sideLength;
-
+	
 	/**
      * How many generations have passed.
      */
 	private int generation;
-
+	
 	/**
      * How many children for each Boggle couple.
      */
 	private int childrenPerCouple;
-
+	
 	/**
      * Maximum number of Boggles allowed at any time
      */
 	private int popCap;
-
+	
 	/**
      * The Boggles in the current generation.
      */
 	private ArrayList<Boggle> currentGeneration;
-
+	
 	/**
      * Dictionary to check possible words against.
      */
 	private Dictionary dict;
-
+	
 	/**
      * @param sideLength
      *            length of one side of each Boggle board
@@ -75,7 +74,7 @@ public class BogglePopulation {
 			currentGeneration.add(temp);
 		}
 	}
-
+	
 	/**
      * Adds a Boggle to the current generation.
      * @param boggle
@@ -85,7 +84,7 @@ public class BogglePopulation {
 		assert boggle != null;
 		currentGeneration.add(boggle);
 	}
-
+	
 	/**
      * Adds a Boggle to the current generation.
      * @param grid
@@ -95,7 +94,7 @@ public class BogglePopulation {
 		assert grid.length == sideLength;
 		currentGeneration.add(new Boggle(grid, dict));
 	}
-
+	
 	/**
      * Finds the average score of the current generation.
      * @return the average score of the current generation
@@ -113,7 +112,7 @@ public class BogglePopulation {
 		}
 		return total / counter;
 	}
-
+	
 	/**
      * Replaces the current generation of Boggles with their children.
      */
@@ -124,43 +123,40 @@ public class BogglePopulation {
 		}
 		// sort the current generation by score
 		Collections.sort(currentGeneration);
-
+		
 		// make children
 		ArrayList<Boggle> children = new ArrayList<Boggle>();
 		Boggle parent1;
 		Boggle parent2;
 		Boggle child;
-/*		// make, on average, childrenPerCouple children per couple
-		for (int i = 0; i < childrenPerCouple * currentGeneration.size(); i++) {  		
-			parent1 = weightedRandomFromList(currentGeneration);
-			do {
-				parent2 = weightedRandomFromList(currentGeneration);
-			} while (parent1 == parent2);
-			child = parent1.merge(parent2);
-			children.add(child);
+		/*
+         * // make, on average, childrenPerCouple children per couple for (int i =
+         * 0; i < childrenPerCouple * currentGeneration.size(); i++) { parent1 =
+         * weightedRandomFromList(currentGeneration); do { parent2 =
+         * weightedRandomFromList(currentGeneration); } while (parent1 ==
+         * parent2); child = parent1.merge(parent2); children.add(child); }
+         */for (int i = 0; i < this.numBoggles() - 1; i += 2) {
+			// get the next two parents
+			parent1 = currentGeneration.get(i);
+			parent2 = currentGeneration.get(i + 1);
+			// mate them childrenPerCouple times
+			for (int j = 0; j < childrenPerCouple; j++) {
+				child = parent1.merge(parent2);
+				children.add(child);
+			}
 		}
-*/		 for (int i = 0; i < this.numBoggles() - 1; i += 2) {
-             // get the next two parents
-             parent1 = currentGeneration.get(i);
-             parent2 = currentGeneration.get(i + 1);
-             // mate them childrenPerCouple times
-             for (int j = 0; j < childrenPerCouple; j++) {
-                     child = parent1.merge(parent2);
-                     children.add(child);
-             }
-     }
-
+		
 		// do elitist selection
 		// highest() seems to clone the object or something and so age is not
 		// preserved
 		Boggle highest = currentGeneration.get(currentGeneration.size() - 1);
-//		if (highest.getAge() < AGE_LIMIT) {
-//			highest.incrementAge();
-			children.add(highest);
-//		} else {
-//			highest.incrementAge();
-//		}
-
+		// if (highest.getAge() < AGE_LIMIT) {
+		// highest.incrementAge();
+		children.add(highest);
+		// } else {
+		// highest.incrementAge();
+		// }
+		
 		// make sure there are no duplicates, then rank the boggles
 		HashSet<String> uniqueGrids = new HashSet<String>();
 		for (int i = 0; i < children.size(); i++) {
@@ -173,18 +169,18 @@ public class BogglePopulation {
 			}
 			b.generate();
 		}
-	
+		
 		// reduce number of children to popCap through weighted random selection
 		Collections.sort(children);
-/*		while (children.size() > popCap) {
-			children.remove(weightedRandomWorstFromList(children));
-		}
-*/		// make sure number of children <= popCap by removing the worst few
+		/*
+         * while (children.size() > popCap) {
+         * children.remove(weightedRandomWorstFromList(children)); }
+         */// make sure number of children <= popCap by removing the worst few
 		Collections.sort(children);
 		while (children.size() > popCap) {
 			children.remove(0);
 		}
-
+		
 		// apply changes
 		currentGeneration.clear();
 		currentGeneration.addAll(children);
@@ -192,17 +188,20 @@ public class BogglePopulation {
 		generation++;
 	}
 	
-	/** Taken from http://www.perlmonks.org/?node_id=158482
-	 * How it works: on the first iteration, the if will always be true,
-	 * establishing the first Boggle as the random one (unless the first boggle scores 0).
-	 * On successive iterations, every other Boggle gets a weighted chance at
-	 * replacing the previous Boggle.
-	 */
+	/**
+     * Taken from http://www.perlmonks.org/?node_id=158482 How it works: on the
+     * first iteration, the if will always be true, establishing the first
+     * Boggle as the random one (unless the first boggle scores 0). On
+     * successive iterations, every other Boggle gets a weighted chance at
+     * replacing the previous Boggle.
+     */
 	private Boggle weightedRandomFromList(List<Boggle> list) {
 		int sum = 0;
 		Boggle result = null;
 		for (Boggle b : list) {
-			if (Math.random() * (sum += b.getScore() * b.getScore()) < b.getScore() * b.getScore()) {
+			if (Math.random() * (sum += b.getScore() * b.getScore()) < b
+			        .getScore()
+			        * b.getScore()) {
 				result = b;
 			}
 		}
@@ -216,14 +215,17 @@ public class BogglePopulation {
 		int maxScore = Collections.max(list).getScore();
 		maxScore *= maxScore;
 		for (Boggle b : list) {
-			if (Math.random() * (sum += (maxScore - b.getScore() * b.getScore())) < (maxScore - b.getScore() * b.getScore())) {
+			if (Math.random()
+			        * (sum += (maxScore - b.getScore() * b.getScore())) < (maxScore - b
+			        .getScore()
+			        * b.getScore())) {
 				result = b;
 			}
 		}
 		assert result != null;
 		return result;
 	}
-
+	
 	/**
      * Accessor method for the current generation of Boggles.
      * @return the current generation of Boggles
@@ -231,15 +233,15 @@ public class BogglePopulation {
 	public ArrayList<Boggle> getCurrentGeneration() {
 		return currentGeneration;
 	}
-
+	
 	public int getGeneration() {
 		return generation;
 	}
-
+	
 	public int getPopCap() {
 		return popCap;
 	}
-
+	
 	/**
      * Finds the highest-scoring Boggle in the current generation.
      * @return the highest-scoring Boggle in the current generation
@@ -251,7 +253,7 @@ public class BogglePopulation {
 		}
 		return Collections.max(currentGeneration);
 	}
-
+	
 	/**
      * Finds the lowest-scoring Boggle in the current generation.
      * @return the lowest-scoring Boggle in the current generation
@@ -263,7 +265,7 @@ public class BogglePopulation {
 		}
 		return Collections.min(currentGeneration);
 	}
-
+	
 	/**
      * Accessor method for the number of Boggles in the current generation.
      * @return the number of Boggles in the current generation
@@ -271,7 +273,7 @@ public class BogglePopulation {
 	public int numBoggles() {
 		return currentGeneration.size();
 	}
-
+	
 	public Boggle removeHighest() throws GenerationEmptyException {
 		if (numBoggles() <= 0) {
 			throw new GenerationEmptyException(
@@ -281,15 +283,15 @@ public class BogglePopulation {
 		currentGeneration.remove(highest);
 		return highest;
 	}
-
+	
 	public void setPopCap(int popCap) {
 		this.popCap = popCap;
 	}
 	
 	public Boggle random() {
-		return currentGeneration.get((int)(Math.random() * numBoggles()));
+		return currentGeneration.get((int) (Math.random() * numBoggles()));
 	}
-
+	
 	/**
      * Represents this BogglePopulation as a String.
      * @return representation of this BogglePopulation

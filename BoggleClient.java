@@ -1,4 +1,3 @@
-
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -14,26 +13,30 @@ public class BoggleClient {
 	private BogglePopulation bp;
 	private Dictionary dict;
 	private Boggle highest;
-
+	private int startingPopulation, startingChildrenPerCouple, startingPopCap;
+	
 	private static final Pattern pair = Pattern
 	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
-
+	
 	public BoggleClient(String serverAddress, int serverPort, String dictPath,
 	        int sideLength, int startingPopulation, int childrenPerCouple,
 	        int popCap) {
 		this.sideLength = sideLength;
 		this.serverAddress = serverAddress;
 		this.serverPort = serverPort;
-
+		this.startingPopulation = startingPopulation;
+		this.startingChildrenPerCouple = childrenPerCouple;
+		this.startingPopCap = popCap;
+		
 		// init dictionary
 		dict = new Dictionary();
 		dict.buildDictionary(dictPath);
-
+		
 		// init population
-		bp = new BogglePopulation(sideLength, startingPopulation,
-		        childrenPerCouple, popCap, dict);
+		bp = new BogglePopulation(sideLength, this.startingPopulation,
+		        startingChildrenPerCouple, startingPopCap, dict);
 	}
-
+	
 	public void connect() {
 		// connect to server
 		try {
@@ -46,28 +49,19 @@ public class BoggleClient {
 			System.err.println("Couldn't connect to server: " + e);
 			System.exit(1);
 		}
-
+		
 		while (true) {
 			// complete a generation
 			try {
 				bp.evolve();
-
+				
 				if (highest == null
 				        || bp.highest().getScore() > highest.getScore()) {
 					highest = bp.highest();
 				}
-
+				
 				giveServerOutput();
 				readServerInput();
-
-				System.out.println("Gen " + bp.getGeneration() + ": pop cap="
-				        + bp.getPopCap() + "; all time highest="
-				        + highest.getScore() + " " + highest.gridToString());
-				ArrayList<Boggle> gen = bp.getCurrentGeneration();
-				for (Boggle b : gen) {
-					System.out.println(b.gridToString() + " " + b.getScore());
-				}
-				System.out.println();
 			}
 			catch (GenerationEmptyException e) {
 				break;
@@ -78,12 +72,12 @@ public class BoggleClient {
 			}
 		}
 	}
-
+	
 	private void giveServerOutput() throws GenerationEmptyException {
-		// tell server the score
-		out.println("Score:" + bp.highest().getScore());
-
+		out.println("Highest:" + highest);
+		
 		// send a migrant to the server
+		// TODO analyze migration frequency
 		Boggle migrant;
 		if (Math.random() < 0.25) {
 			migrant = bp.highest();
@@ -91,13 +85,12 @@ public class BoggleClient {
 			migrant = bp.random();
 		}
 		
-		out.println("Migrant:" + migrant.gridToString() + " "
-		        + migrant.getScore());
-
+		out.println("Migrant:" + migrant);
+		
 		// end of transmission
 		out.println();
 	}
-
+	
 	private void readServerInput() throws GenerationEmptyException, IOException {
 		String line;
 		Matcher m;
@@ -113,15 +106,16 @@ public class BoggleClient {
 			}
 		}
 	}
-
+	
 	private void storeServerData(String name, String value) {
 		if (name.equalsIgnoreCase("migrant")) {
-			String[] parts = value.split(" ", 2);
-			Boggle migrant = new Boggle(parts[0], sideLength, Integer
-			        .parseInt(parts[1]), dict);
+			Boggle migrant = new Boggle(value, sideLength, dict);
 			bp.add(migrant);
 		} else if (name.equalsIgnoreCase("pop-cap")) {
 			bp.setPopCap(Integer.parseInt(value));
+		} else if (name.equalsIgnoreCase("reset")) {
+			bp = new BogglePopulation(sideLength, this.startingPopulation,
+			        startingChildrenPerCouple, startingPopCap, dict);
 		}
 	}
 }

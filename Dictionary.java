@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -14,14 +13,14 @@ public class Dictionary {
      * List of children of the top node.
      */
 	protected ArrayList<Letter> children;
-
+	
 	/**
      * Default constructor for Dictionary.
      */
 	public Dictionary() {
 		this.children = new ArrayList<Letter>();
 	}
-
+	
 	/**
      * Adds a <CODE>String</CODE> to the dictionary.
      * @param word
@@ -45,7 +44,7 @@ public class Dictionary {
 		child.add(word.substring(1));
 		Collections.sort(this.children);
 	}
-
+	
 	/**
      * Looks up a <CODE>String</CODE> in the dictionary, checking if it begins
      * a word.
@@ -68,7 +67,7 @@ public class Dictionary {
 		// otherwise, traverse recursively
 		return children.get(index).beginsWord(word.substring(1));
 	}
-
+	
 	/**
      * Fills the dictionary with words from a file.
      * @param path
@@ -89,7 +88,7 @@ public class Dictionary {
 			System.exit(-1);
 		}
 	}
-
+	
 	/**
      * Looks up a <CODE>String</CODE> in the dictionary.
      * @return whether or not <CODE>word</CODE> is in the dictionary
@@ -110,7 +109,7 @@ public class Dictionary {
 		// otherwise, traverse recursively
 		return children.get(index).isWord(word.substring(1));
 	}
-
+	
 	/**
      * @see java.lang.Object#toString()
      */
@@ -136,12 +135,12 @@ class Letter extends Dictionary implements Comparable<Letter> {
      * Character that this Letter object represents.
      */
 	private char data;
-
+	
 	/**
      * Whether this Letter ends a word in the dictionary.
      */
 	private boolean endsWord = false;
-
+	
 	/**
      * @param data
      *            character that this object represents
@@ -150,7 +149,7 @@ class Letter extends Dictionary implements Comparable<Letter> {
 		super();
 		this.data = Character.toLowerCase(data);
 	}
-
+	
 	/**
      * @see Dictionary#add(java.lang.String)
      */
@@ -177,7 +176,7 @@ class Letter extends Dictionary implements Comparable<Letter> {
 		child.add(word.substring(1));
 		Collections.sort(this.children);
 	}
-
+	
 	public int compareTo(Letter that) {
 		if (this.getData() > that.getData()) {
 			return 1;
@@ -187,21 +186,21 @@ class Letter extends Dictionary implements Comparable<Letter> {
 			return 0;
 		}
 	}
-
+	
 	/**
      * @return character that this object represents
      */
 	public char getData() {
 		return this.data;
 	}
-
+	
 	/**
      * @return whether this Letter ends a word in the dictionary.
      */
 	public boolean getEndsWord() {
 		return this.endsWord;
 	}
-
+	
 	/**
      * @see Dictionary#toString()
      */

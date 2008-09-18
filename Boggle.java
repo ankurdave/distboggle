@@ -1,4 +1,3 @@
-
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -11,35 +10,35 @@ public class Boggle implements Comparable<Boggle> {
      * Length of one side of the Boggle board.
      */
 	private int sideLength;
-
+	
 	/**
      * Total score of all words found in the Boggle board.
      */
 	private int score;
-
+	
 	/**
      * Simple grid of characters that makes the basic information of a Boggle
      * board.
      */
 	private char[][] grid;
-
+	
 	/**
      * "Smart" grid of Letters that can generate a word list.
      */
 	private Letter[][] board;
-
+	
 	/**
      * Unordered list of words found in the Boggle board.
      */
 	private HashSet<String> words = new HashSet<String>();
-
+	
 	/**
      * Dictionary to check possible words against.
      */
 	private Dictionary dict;
-
+	
 	private int age = 1;
-
+	
 	/**
      * @param grid
      *            square array of characters from which to construct the board
@@ -63,7 +62,7 @@ public class Boggle implements Comparable<Boggle> {
 			}
 		}
 	}
-
+	
 	/**
      * @param grid
      *            square array of characters from which to construct the board
@@ -86,24 +85,22 @@ public class Boggle implements Comparable<Boggle> {
 			}
 		}
 	}
-
+	
 	public Boggle(String s, int sideLength, int score, Dictionary dict) {
 		// todo: error handling
-
+		
 		char[][] grid = new char[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
 				grid[i][j] = s.charAt(i * sideLength + j);
 			}
 		}
-
+		
 		assert grid.length == grid[0].length;
 		assert grid.length > 0;
-		assert dict != null;
 		// copy params to fields
 		this.score = score;
 		this.grid = grid;
-		this.dict = dict;
 		this.sideLength = sideLength;
 		// make board from grid
 		board = new Letter[sideLength][sideLength];
@@ -113,7 +110,13 @@ public class Boggle implements Comparable<Boggle> {
 			}
 		}
 	}
-
+	
+	public Boggle(String s, int sideLength, Dictionary dict) {
+		String[] parts = s.split(" ", 2);
+		Boggle migrant = new Boggle(parts[0], sideLength, Integer
+		        .parseInt(parts[1]), dict);
+	}
+	
 	/**
      * Merges two Boggle boards randomly.<BR>
      * Calculates the score of each board and on each character in the grid,
@@ -133,7 +136,7 @@ public class Boggle implements Comparable<Boggle> {
 		if (this.sideLength != that.sideLength) {
 			return null;
 		}
-
+		
 		// init child
 		char[][] childGrid = new char[sideLength][sideLength];
 		// determine which one is higher or lower
@@ -159,7 +162,7 @@ public class Boggle implements Comparable<Boggle> {
 				lower = this;
 			}
 		}
-
+		
 		// check if the parents are too similar
 		int sameLetters = 0;
 		for (int i = 0; i < sideLength; i++) {
@@ -176,7 +179,7 @@ public class Boggle implements Comparable<Boggle> {
 			higherChance = 6;
 			lowerChance = 3;
 		}
-
+		
 		// construct the child grid
 		double temp;
 		for (int i = 0; i < sideLength; i++) {
@@ -195,12 +198,12 @@ public class Boggle implements Comparable<Boggle> {
 				}
 			}
 		}
-
+		
 		// make the child board
 		Boggle child = new Boggle(childGrid, dict);
 		return child;
 	}
-
+	
 	/**
      * Traverses the Boggle board, makes a list of words, and finds the score.
      */
@@ -236,7 +239,7 @@ public class Boggle implements Comparable<Boggle> {
 		}
 		this.score = score;
 	}
-
+	
 	/**
      * Randomly mutates some of the characters.
      * @param mutationProbability
@@ -258,21 +261,21 @@ public class Boggle implements Comparable<Boggle> {
 		Boggle thisMutated = new Boggle(gridMutated, dict);
 		return thisMutated;
 	}
-
+	
 	/**
      * @return side length of the board
      */
 	public int getSideLength() {
 		return sideLength;
 	}
-
+	
 	/**
      * @return the list of words in the board
      */
 	public HashSet<String> getWords() {
 		return words;
 	}
-
+	
 	/**
      * @return the sorted list of words in the board
      */
@@ -282,44 +285,36 @@ public class Boggle implements Comparable<Boggle> {
 		// convert to array
 		return words;
 	}
-
+	
 	/**
      * @return the score of the board
      */
 	public int getScore() {
 		return score;
 	}
-
+	
 	/**
      * @return the Dictionary used in generating the words in this board
      */
 	public Dictionary getDict() {
 		return dict;
 	}
-
+	
 	/**
      * @return a random letter in the range A-Z
      */
 	private char randomLetter() {
 		return (char) (Math.random() * (90 - 65 + 1) + 65);
 	}
-
+	
 	/**
      * @see java.lang.Object#toString()
      */
 	@Override
 	public String toString() {
-		String s = "Boggle[" + "sideLength=" + sideLength + "; " + "score="
-		        + getScore() + "; " + "grid=";
-		for (char c[] : grid) {
-			for (char d : c) {
-				s += d;
-			}
-		}
-		s += "]";
-		return s;
+		return gridToString() + " " + getScore();
 	}
-
+	
 	public String gridToString() {
 		String s = "";
 		for (char c[] : grid) {
@@ -329,7 +324,7 @@ public class Boggle implements Comparable<Boggle> {
 		}
 		return s;
 	}
-
+	
 	/**
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
@@ -342,7 +337,7 @@ public class Boggle implements Comparable<Boggle> {
 			return 0;
 		}
 	}
-
+	
 	/**
      * @see java.lang.Object#clone()
      */
@@ -357,15 +352,15 @@ public class Boggle implements Comparable<Boggle> {
 		Boggle thisClone = new Boggle(grid, dict);
 		return thisClone;
 	}
-
+	
 	public int getAge() {
 		return age;
 	}
-
+	
 	public void incrementAge() {
 		age++;
 	}
-
+	
 	/**
      * Represents each letter of a Boggle board.
      * @author ankur
@@ -375,22 +370,22 @@ public class Boggle implements Comparable<Boggle> {
          * Character data that the Letter represents.
          */
 		private char data;
-
+		
 		/**
          * X position in the Boggle board.
          */
 		private int X;
-
+		
 		/**
          * Y position in the Boggle board.
          */
 		private int Y;
-
+		
 		/**
          * Whether this Letter has been used already in the current word.
          */
 		private boolean hasBeenHit = false;
-
+		
 		/**
          * @param data
          *            character that the Letter represents
@@ -404,35 +399,35 @@ public class Boggle implements Comparable<Boggle> {
 			this.X = X;
 			this.Y = Y;
 		}
-
+		
 		/**
          * @return character represented by this Letter
          */
 		public char getData() {
 			return data;
 		}
-
+		
 		/**
          * @return X position of this Letter in the Boggle board
          */
 		public int getX() {
 			return X;
 		}
-
+		
 		/**
          * @return Y position of this Letter in the Boggle board
          */
 		public int getY() {
 			return Y;
 		}
-
+		
 		/**
          * @return whether this Letter has been used in a word before
          */
 		public boolean getHasBeenHit() {
 			return hasBeenHit;
 		}
-
+		
 		/**
          * @param hasBeenHit
          *            new value for hasBeenHit
@@ -440,7 +435,7 @@ public class Boggle implements Comparable<Boggle> {
 		public void setHasBeenHit(boolean hasBeenHit) {
 			this.hasBeenHit = hasBeenHit;
 		}
-
+		
 		/**
          * Traverses the Boggle board recursively.
          * @param soFar
@@ -505,7 +500,7 @@ public class Boggle implements Comparable<Boggle> {
 			// letters to traverse onto this one
 			hasBeenHit = false;
 		}
-
+		
 		/**
          * @see java.lang.Object#clone()
          */
@@ -515,7 +510,7 @@ public class Boggle implements Comparable<Boggle> {
 			thisClone.setHasBeenHit(hasBeenHit);
 			return thisClone;
 		}
-
+		
 		/**
          * @see java.lang.Object#equals(java.lang.Object)
          */
@@ -529,7 +524,7 @@ public class Boggle implements Comparable<Boggle> {
 				return false;
 			}
 		}
-
+		
 		/**
          * @see java.lang.Object#toString()
          */

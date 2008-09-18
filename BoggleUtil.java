@@ -1,4 +1,3 @@
-
 public class BoggleUtil {
 	/**
      * Creates a character grid filled with random uppercase letters.

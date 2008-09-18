@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -15,15 +14,15 @@ public class BoggleTester {
      *            arguments to the program
      */
 	static int SIDE_LENGTH;
-
+	
 	static Scanner in = new Scanner(System.in);
-
+	
 	static char[][] grid;
-
+	
 	static String gridImage = "";
-
+	
 	static Scanner tempIn;
-
+	
 	public static void main(String[] args) {
 		// need at least 1 argument
 		if (args.length < 1) {
@@ -84,13 +83,11 @@ public class BoggleTester {
 		// make the Boggle board from the above information
 		Boggle board = new Boggle(grid, path);
 		board.generate();
-/*		// get the output of the computations
-		Object[] words = board.getWordsSorted();
-		// print output
-		for (Object word : words) {
-			System.out.println(word);
-		}
-*/		// print # of words
+		/*
+         * // get the output of the computations Object[] words =
+         * board.getWordsSorted(); // print output for (Object word : words) {
+         * System.out.println(word); }
+         */// print # of words
 		System.out.println(board);
 	}
 }

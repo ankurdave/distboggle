@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,37 +10,55 @@ import java.util.regex.Pattern;
  * Thread started by BoggleServer to handle BoggleClients.
  * @author ankur
  */
-public class BoggleServerThread extends Thread {
+public class BoggleServerThread extends Thread
+        implements
+            Comparable<BoggleServerThread> {
 	/**
      * The socket used to communicate with the client.
      */
 	private Socket socket;
-
+	
 	/**
      * The ID of the client that this thread serves.
      */
 	private int clientID;
-
+	
 	/**
      * A reference to the main server thread that started this worker thread.
      */
 	private BoggleServer server;
-
+	
 	private PrintWriter out;
-
+	
 	private BufferedReader in;
-
+	
+	private int score;
+	private Boggle migrant;
+	
 	private static final Pattern pair = Pattern
 	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
-
-	public BoggleServerThread(BoggleServer server, Socket socket) {
+	
+	public BoggleServerThread(BoggleServer server, Socket socket, int clientID) {
 		super("BoggleServerThread");
-
+		
 		this.server = server;
 		this.socket = socket;
-		this.clientID = server.getNextClientID();
+		this.clientID = clientID;
 	}
-
+	public int getScore() {
+		return score;
+	}
+	public int compareTo(BoggleServerThread that) {
+		return that.getScore() - this.getScore(); // descending order by
+                                                    // default
+	}
+	public Boggle getMigrant() {
+		return migrant;
+	}
+	
+	public void setMigrant(Boggle migrant) {
+		this.migrant = migrant;
+	}
 	@Override
 	public void run() {
 		try {
@@ -49,7 +66,7 @@ public class BoggleServerThread extends Thread {
 			out = new PrintWriter(socket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(socket
 			        .getInputStream()));
-
+			
 			while (true) {
 				readClientInput();
 				giveClientOutput();
@@ -60,7 +77,7 @@ public class BoggleServerThread extends Thread {
 			System.exit(1);
 		}
 	}
-
+	
 	private void readClientInput() throws IOException {
 		String line;
 		Matcher m;
@@ -73,27 +90,39 @@ public class BoggleServerThread extends Thread {
 			}
 		}
 	}
-
+	
 	private void storeClientData(String name, String value) {
 		if (name.equalsIgnoreCase("score")) {
-			server.setClientScore(clientID, Integer.parseInt(value));
+			score = Integer.parseInt(value);
 		} else if (name.equalsIgnoreCase("migrant")) {
-			server.addMigrant(value, clientID);
+			Boggle migrant = new Boggle(value, 4, server.getDictionary());
+			server.addMigrant(migrant, this);
+		} else if (name.equalsIgnoreCase("highest")) {
+			Boggle highest = new Boggle(value, 4, server.getDictionary());
+			server.setHighest(highest);
 		}
 	}
-
+	
+	public void reset() {
+		out.println("Reset: yes");
+		out.println();
+		
+		score = 0;
+		migrant = null;
+	}
+	
 	private void giveClientOutput() {
 		// give the migrant if there is one
-		String migrant = server.getMigrantForClient(clientID);
 		if (migrant != null) {
 			out.println("Migrant: " + migrant);
+			migrant = null;
 		}
-
+		
 		// give the new pop cap
 		out.println("Pop-Cap: " + server.getPopCapForClient(clientID));
-
+		
 		// end the transmission
 		out.println();
 	}
-
+	
 }

@@ -1,10 +1,9 @@
-
 import java.io.*;
 import java.net.*;
 
 public class BoggleHillClimbClient {
 	static int clientID;
-
+	
 	public static void main(String[] args) throws IOException {
 		Dictionary dict = new Dictionary();
 		dict.buildDictionary("words.txt");
@@ -26,13 +25,13 @@ public class BoggleHillClimbClient {
 			System.err.println("Couldn't connect: " + e.getMessage());
 			System.exit(1);
 		}
-
+		
 		String inputLine, outputLine;
-
+		
 		// get client id
 		inputLine = in.readLine();
 		clientID = Integer.parseInt(inputLine);
-
+		
 		// get boggle from server
 		out.println(""); // tell server we're ready for a migrant
 		inputLine = in.readLine();
@@ -41,7 +40,7 @@ public class BoggleHillClimbClient {
 		best.generate();
 		System.err.println("Start boggle: " + inputLine);
 		Boggle trial;
-
+		
 		for (int i = 0;; i++) {
 			if (i % 1000 == 0) {
 				System.err.println("Mutation attempt " + i);
@@ -53,14 +52,13 @@ public class BoggleHillClimbClient {
 			if (trial.getScore() > best.getScore() || i >= 20000) {
 				best = trial;
 				System.out.println(i + " " + best.getScore());
-
+				
 				// send improved boggle to the server
-				outputLine = clientID + " " + best.gridToString() + " "
-				        + best.getScore();
+				outputLine = clientID + " " + best;
 				out.println(outputLine); // tells server we've finished a
 				// "generation" and sends migrant
 				System.err.println("Sent boggle: " + outputLine);
-
+				
 				// get a migrant from the server, replacing the current one with
 				// the new one
 				inputLine = in.readLine();
@@ -75,11 +73,11 @@ public class BoggleHillClimbClient {
 					best.generate();
 					System.err.println("Got boggle: " + inputLine);
 				}
-
+				
 				i = 0; // reset the counter so we can work on the next one
 			}
 		}
-
+		
 		out.close();
 		in.close();
 		echoSocket.close();
