@@ -86,13 +86,17 @@ public class Boggle implements Comparable<Boggle> {
 		}
 	}
 	
-	public Boggle(String s, int sideLength, int score, Dictionary dict) {
+	public Boggle(String s, int sideLength, Dictionary dict) {
+		String[] parts = s.split(" ", 2);
+		String gridS = parts[0];
+		int score = Integer.parseInt(parts[1]);
+		
 		// todo: error handling
 		
 		char[][] grid = new char[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
-				grid[i][j] = s.charAt(i * sideLength + j);
+				grid[i][j] = gridS.charAt(i * sideLength + j);
 			}
 		}
 		
@@ -102,6 +106,7 @@ public class Boggle implements Comparable<Boggle> {
 		this.score = score;
 		this.grid = grid;
 		this.sideLength = sideLength;
+		this.dict = dict;
 		// make board from grid
 		board = new Letter[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
@@ -109,12 +114,6 @@ public class Boggle implements Comparable<Boggle> {
 				board[i][j] = new Letter(grid[i][j], i, j);
 			}
 		}
-	}
-	
-	public Boggle(String s, int sideLength, Dictionary dict) {
-		String[] parts = s.split(" ", 2);
-		Boggle migrant = new Boggle(parts[0], sideLength, Integer
-		        .parseInt(parts[1]), dict);
 	}
 	
 	/**

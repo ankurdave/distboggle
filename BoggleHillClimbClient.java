@@ -35,8 +35,7 @@ public class BoggleHillClimbClient {
 		// get boggle from server
 		out.println(""); // tell server we're ready for a migrant
 		inputLine = in.readLine();
-		Boggle best = new Boggle(inputLine.split(" ")[1], 4, Integer
-		        .parseInt(inputLine.split(" ")[2]), dict);
+		Boggle best = new Boggle(inputLine, 4, dict);
 		best.generate();
 		System.err.println("Start boggle: " + inputLine);
 		Boggle trial;
@@ -68,8 +67,7 @@ public class BoggleHillClimbClient {
 				}
 				if (!inputLine.isEmpty()) { // if the server has no migrants,
 					// keep mutating the current one
-					best = new Boggle(inputLine.split(" ")[1], 4, Integer
-					        .parseInt(inputLine.split(" ")[2]), dict);
+					best = new Boggle(inputLine, 4, dict);
 					best.generate();
 					System.err.println("Got boggle: " + inputLine);
 				}

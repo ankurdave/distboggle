@@ -96,15 +96,13 @@ public class BoggleServer {
 			t.reset();
 		}
 		
-		startTime = System.currentTimeMillis(); // restart timer
-		
+		startTime = System.currentTimeMillis(); // restart timer		
 	}
 	
 	public synchronized void addMigrant(Boggle migrant, BoggleServerThread caller) {
 		Collections.sort(threads);
 		for (BoggleServerThread c : threads) {
-			if (c.getMigrant() == null
-			        || c.getMigrant().getScore() < migrant.getScore()) {
+			if ((c.getMigrant() == null || c.getMigrant().getScore() < migrant.getScore()) && caller != c) {
 				c.setMigrant(migrant);
 				break;
 			}

@@ -54,6 +54,11 @@ public class BoggleClient {
 			// complete a generation
 			try {
 				bp.evolve();
+				System.out.println(bp);
+				for (Boggle b : bp.getCurrentGeneration()) {
+					System.out.println(b);
+				}
+				System.out.println();
 				
 				if (highest == null
 				        || bp.highest().getScore() > highest.getScore()) {
@@ -89,6 +94,7 @@ public class BoggleClient {
 		
 		// end of transmission
 		out.println();
+		out.flush();
 	}
 	
 	private void readServerInput() throws GenerationEmptyException, IOException {
@@ -103,6 +109,12 @@ public class BoggleClient {
 			m = pair.matcher(line);
 			if (m.matches()) {
 				storeServerData(m.group(1), m.group(2));
+				if (m.group(1).equalsIgnoreCase("reset")) {
+					// throw away the rest of the message
+					do {
+						line = in.readLine();
+					} while (!line.isEmpty());
+				}
 			}
 		}
 	}
@@ -116,6 +128,7 @@ public class BoggleClient {
 		} else if (name.equalsIgnoreCase("reset")) {
 			bp = new BogglePopulation(sideLength, this.startingPopulation,
 			        startingChildrenPerCouple, startingPopCap, dict);
+			highest = null;
 		}
 	}
 }

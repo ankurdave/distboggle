@@ -105,7 +105,10 @@ public class BoggleServerThread extends Thread
 	
 	public void reset() {
 		out.println("Reset: yes");
+		
+		// end the transmission
 		out.println();
+		out.flush();
 		
 		score = 0;
 		migrant = null;
@@ -123,6 +126,7 @@ public class BoggleServerThread extends Thread
 		
 		// end the transmission
 		out.println();
+		out.flush();
 	}
 	
 }

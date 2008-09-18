@@ -298,7 +298,7 @@ public class BogglePopulation {
      */
 	@Override
 	public String toString() {
-		String s = "";
+		String s = null;
 		try {
 			s = generation + " " + highest().getScore() + " " + averageScore()
 			        + " " + lowest().getScore();
