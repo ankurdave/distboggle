@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-public class PopulationClient {
+public class GeneticClient {
 	private static final Pattern pair = Pattern
 	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
 	private Population bp;
@@ -19,7 +19,7 @@ public class PopulationClient {
 	private int serverPort;
 	private int sideLength;
 	private int startingPopulation, startingChildrenPerCouple, startingPopCap;
-	public PopulationClient(String serverAddress, int serverPort, String dictPath,
+	public GeneticClient(String serverAddress, int serverPort, String dictPath,
 	        int sideLength, int startingPopulation, int childrenPerCouple,
 	        int popCap) {
 		this.sideLength = sideLength;
