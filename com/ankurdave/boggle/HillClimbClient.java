@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
-public class BoggleHillClimbClient {
+public class HillClimbClient {
 	static int clientID;
 	public static void main(String[] args) throws IOException {
 		Dictionary dict = new Dictionary();
@@ -36,10 +36,10 @@ public class BoggleHillClimbClient {
 		// get boggle from server
 		out.println(""); // tell server we're ready for a migrant
 		inputLine = in.readLine();
-		Boggle best = new Boggle(inputLine, 4, dict);
+		Board best = new Board(inputLine, 4, dict);
 		best.generate();
 		System.err.println("Start boggle: " + inputLine);
-		Boggle trial;
+		Board trial;
 		for (int i = 0;; i++) {
 			if (i % 1000 == 0) {
 				System.err.println("Mutation attempt " + i);
@@ -65,7 +65,7 @@ public class BoggleHillClimbClient {
 				}
 				if (!inputLine.isEmpty()) { // if the server has no migrants,
 					// keep mutating the current one
-					best = new Boggle(inputLine, 4, dict);
+					best = new Board(inputLine, 4, dict);
 					best.generate();
 					System.err.println("Got boggle: " + inputLine);
 				}

@@ -1,14 +1,14 @@
 package com.ankurdave.boggle;
 
-public class BoggleHillClimber {
+public class HillClimber {
 	public static void main(String[] args) {
 		// create the starting Boggle
-		char[][] start = BoggleUtil.randomGrid(4);
+		char[][] start = Util.randomGrid(4);
 		Dictionary dict = new Dictionary();
 		dict.buildDictionary("words.txt");
-		Boggle current = new Boggle(start, dict);
+		Board current = new Board(start, dict);
 		current.generate(); // find score of current Boggle
-		Boggle trial;
+		Board trial;
 		System.err.println("#" + current);
 		// start the timer
 		long startTime = System.currentTimeMillis();

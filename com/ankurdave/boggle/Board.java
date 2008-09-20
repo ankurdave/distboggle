@@ -2,7 +2,7 @@ package com.ankurdave.boggle;
 
 import java.util.Arrays;
 import java.util.HashSet;
-public class Boggle implements Comparable<Boggle> {
+public class Board implements Comparable<Board> {
 	class Letter {
 		private char data;
 		private boolean hasBeenHit = false;
@@ -110,7 +110,7 @@ public class Boggle implements Comparable<Boggle> {
 	private int score;
 	private int sideLength;
 	private HashSet<String> words = new HashSet<String>();
-	public Boggle(char[][] grid, Dictionary dict) {
+	public Board(char[][] grid, Dictionary dict) {
 		assert grid.length == grid[0].length;
 		assert grid.length > 0;
 		assert dict != null;
@@ -125,7 +125,7 @@ public class Boggle implements Comparable<Boggle> {
 			}
 		}
 	}
-	public Boggle(char[][] grid, String path) {
+	public Board(char[][] grid, String path) {
 		assert grid.length == grid[0].length;
 		assert grid.length > 0;
 		sideLength = grid.length;
@@ -140,7 +140,7 @@ public class Boggle implements Comparable<Boggle> {
 			}
 		}
 	}
-	public Boggle(String s, int sideLength, Dictionary dict) {
+	public Board(String s, int sideLength, Dictionary dict) {
 		// TODO: error handling
 		String[] parts = s.split(" ", 2);
 		String gridS = parts[0];
@@ -165,17 +165,17 @@ public class Boggle implements Comparable<Boggle> {
 			}
 		}
 	}
-	@Override public Boggle clone() {
+	@Override public Board clone() {
 		Letter[][] boardClone = new Letter[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
 				boardClone[i][j] = board[i][j].clone();
 			}
 		}
-		Boggle thisClone = new Boggle(grid, dict);
+		Board thisClone = new Board(grid, dict);
 		return thisClone;
 	}
-	public int compareTo(Boggle that) {
+	public int compareTo(Board that) {
 		if (this.getScore() > that.getScore()) {
 			return 1;
 		} else if (this.getScore() < that.getScore()) {
@@ -266,13 +266,13 @@ public class Boggle implements Comparable<Boggle> {
      * @param that Boggle board to merge with the calling board
      * @return the child board
      */
-	public Boggle merge(Boggle that) {
+	public Board merge(Board that) {
 		if (this.sideLength != that.sideLength) { return null; }
 		// init child
 		char[][] childGrid = new char[sideLength][sideLength];
 		// determine which one is higher or lower
-		Boggle higher;
-		Boggle lower;
+		Board higher;
+		Board lower;
 		// caller is higher
 		if (this.getScore() > that.getScore()) {
 			higher = this;
@@ -328,10 +328,10 @@ public class Boggle implements Comparable<Boggle> {
 			}
 		}
 		// make the child board
-		Boggle child = new Boggle(childGrid, dict);
+		Board child = new Board(childGrid, dict);
 		return child;
 	}
-	public Boggle mutate(int mutationProbability) {
+	public Board mutate(int mutationProbability) {
 		assert mutationProbability >= 0 && mutationProbability <= 100;
 		char[][] gridMutated = new char[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
@@ -343,7 +343,7 @@ public class Boggle implements Comparable<Boggle> {
 				}
 			}
 		}
-		Boggle thisMutated = new Boggle(gridMutated, dict);
+		Board thisMutated = new Board(gridMutated, dict);
 		return thisMutated;
 	}
 	@Override public String toString() {

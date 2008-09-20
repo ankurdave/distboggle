@@ -1,7 +1,7 @@
 package com.ankurdave.boggle;
 
 import java.util.List;
-public class BoggleUtil {
+public class Util {
 	/**
      * Creates a character grid filled with random uppercase letters.
      * @param sideLength length of one side of the random grid
@@ -24,10 +24,10 @@ public class BoggleUtil {
      * successive iterations, every other Boggle gets a weighted chance at
      * replacing the previous Boggle.
      */
-	public Boggle weightedRandomFromList(List<Boggle> list) {
+	public Board weightedRandomFromList(List<Board> list) {
 		int sum = 0;
-		Boggle result = null;
-		for (Boggle b : list) {
+		Board result = null;
+		for (Board b : list) {
 			if (Math.random() * (sum += b.getScore() * b.getScore()) < b
 			        .getScore()
 			        * b.getScore()) {

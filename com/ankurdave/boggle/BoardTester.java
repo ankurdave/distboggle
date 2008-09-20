@@ -3,7 +3,7 @@ package com.ankurdave.boggle;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-public class BoggleTester {
+public class BoardTester {
 	static char[][] grid;
 	static String gridImage = "";
 	static Scanner in = new Scanner(System.in);
@@ -67,7 +67,7 @@ public class BoggleTester {
 			System.out.println(gridImage);
 		}
 		// make the Boggle board from the above information
-		Boggle board = new Boggle(grid, path);
+		Board board = new Board(grid, path);
 		board.generate();
 		System.out.println(board);
 	}

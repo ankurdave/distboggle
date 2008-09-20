@@ -11,32 +11,32 @@ import java.util.regex.Pattern;
  * Thread started by BoggleServer to handle BoggleClients.
  * @author ankur
  */
-public class BoggleServerThread extends Thread
+public class ServerThread extends Thread
         implements
-            Comparable<BoggleServerThread> {
+            Comparable<ServerThread> {
 	private static final Pattern pair = Pattern
 	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
 	private int clientID;
 	private BufferedReader in;
-	private Boggle migrant;
+	private Board migrant;
 	private PrintWriter out;
 	private int score;
-	private BoggleServer server;
+	private Server server;
 	/**
      * The socket used to communicate with the client.
      */
 	private Socket socket;
-	public BoggleServerThread(BoggleServer server, Socket socket, int clientID) {
+	public ServerThread(Server server, Socket socket, int clientID) {
 		super("BoggleServerThread");
 		this.server = server;
 		this.socket = socket;
 		this.clientID = clientID;
 	}
-	public int compareTo(BoggleServerThread that) {
+	public int compareTo(ServerThread that) {
 		return that.getScore() - this.getScore(); // descending order by
 		// default
 	}
-	public Boggle getMigrant() {
+	public Board getMigrant() {
 		return migrant;
 	}
 	public int getScore() {
@@ -66,7 +66,7 @@ public class BoggleServerThread extends Thread
 			System.exit(1);
 		}
 	}
-	public void setMigrant(Boggle migrant) {
+	public void setMigrant(Board migrant) {
 		this.migrant = migrant;
 	}
 	private void giveClientOutput() {
@@ -97,10 +97,10 @@ public class BoggleServerThread extends Thread
 		if (name.equalsIgnoreCase("score")) {
 			score = Integer.parseInt(value);
 		} else if (name.equalsIgnoreCase("migrant")) {
-			Boggle migrant = new Boggle(value, 4, server.getDictionary());
+			Board migrant = new Board(value, 4, server.getDictionary());
 			server.addMigrant(migrant, this);
 		} else if (name.equalsIgnoreCase("highest")) {
-			Boggle highest = new Boggle(value, 4, server.getDictionary());
+			Board highest = new Board(value, 4, server.getDictionary());
 			server.setHighest(highest);
 		}
 	}

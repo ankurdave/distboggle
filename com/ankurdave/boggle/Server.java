@@ -9,16 +9,16 @@ import java.util.Collections;
  * Server component of DistBoggle. Manages BoggleClients.
  * @author ankur
  */
-public class BoggleServer {
+public class Server {
 	private static final int DEFAULT_POP_CAP = 20;
 	private static final int POP_CAP_RANGE = 0;
 	private int curClientID = 0;
 	private Dictionary dict;
-	private Boggle highest;
+	private Board highest;
 	private ServerSocket socket;
 	private long startTime;
-	private ArrayList<BoggleServerThread> threads = new ArrayList<BoggleServerThread>();
-	public BoggleServer(int port) {
+	private ArrayList<ServerThread> threads = new ArrayList<ServerThread>();
+	public Server(int port) {
 		// create the socket
 		socket = null;
 		try {
@@ -32,10 +32,10 @@ public class BoggleServer {
 		dict = new Dictionary();
 		dict.buildDictionary("words.txt");
 	}
-	public synchronized void addMigrant(Boggle migrant,
-	        BoggleServerThread caller) {
+	public synchronized void addMigrant(Board migrant,
+	        ServerThread caller) {
 		Collections.sort(threads);
-		for (BoggleServerThread c : threads) {
+		for (ServerThread c : threads) {
 			if ((c.getMigrant() == null || c.getMigrant().getScore() < migrant
 			        .getScore())
 			        && caller != c) {
@@ -64,7 +64,7 @@ public class BoggleServer {
 		try {
 			while (true) {
 				Socket s = socket.accept();
-				BoggleServerThread serverThread = new BoggleServerThread(this,
+				ServerThread serverThread = new ServerThread(this,
 				        s, curClientID++);
 				threads.add(serverThread);
 				serverThread.start();
@@ -79,7 +79,7 @@ public class BoggleServer {
 			System.exit(1);
 		}
 	}
-	public synchronized void setHighest(Boggle b) {
+	public synchronized void setHighest(Board b) {
 		if (highest == null || b.getScore() > highest.getScore()) {
 			highest = b;
 			if (highest.getScore() >= 3500) {
@@ -92,7 +92,7 @@ public class BoggleServer {
 		        + Long.toString(System.currentTimeMillis() - startTime));
 		// reset state
 		highest = null;
-		for (BoggleServerThread t : threads) {
+		for (ServerThread t : threads) {
 			t.reset();
 		}
 		startTime = System.currentTimeMillis(); // restart timer

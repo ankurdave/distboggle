@@ -5,7 +5,7 @@ package com.ankurdave.boggle;
  * dictionaryPath [sideLength [-]]
  * @author Ankur Dave
  */
-public class BogglePopulationTester {
+public class PopulationTester {
 	static String DICT_PATH = "words.txt";
 	/**
      * Method called when program is run.
@@ -17,11 +17,11 @@ public class BogglePopulationTester {
 		// initialize population
 		Dictionary dict = new Dictionary();
 		dict.buildDictionary(DICT_PATH);
-		BogglePopulation bp = new BogglePopulation(SIDE_LENGTH, START_POP,
+		Population bp = new Population(SIDE_LENGTH, START_POP,
 		        AVG_CHILDREN_PER_COUPLE, POP_CAP, dict);
 		// start timer
 		long startTime = System.currentTimeMillis();
-		Boggle highest = bp.highest();
+		Board highest = bp.highest();
 		// start evolution
 		do {
 			try {

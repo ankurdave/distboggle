@@ -7,19 +7,19 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-public class BoggleClient {
+public class PopulationClient {
 	private static final Pattern pair = Pattern
 	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
-	private BogglePopulation bp;
+	private Population bp;
 	private Dictionary dict;
-	private Boggle highest;
+	private Board highest;
 	private BufferedReader in;
 	private PrintWriter out;
 	private String serverAddress;
 	private int serverPort;
 	private int sideLength;
 	private int startingPopulation, startingChildrenPerCouple, startingPopCap;
-	public BoggleClient(String serverAddress, int serverPort, String dictPath,
+	public PopulationClient(String serverAddress, int serverPort, String dictPath,
 	        int sideLength, int startingPopulation, int childrenPerCouple,
 	        int popCap) {
 		this.sideLength = sideLength;
@@ -32,7 +32,7 @@ public class BoggleClient {
 		dict = new Dictionary();
 		dict.buildDictionary(dictPath);
 		// init population
-		bp = new BogglePopulation(sideLength, this.startingPopulation,
+		bp = new Population(sideLength, this.startingPopulation,
 		        startingChildrenPerCouple, startingPopCap, dict);
 	}
 	public void connect() {
@@ -52,7 +52,7 @@ public class BoggleClient {
 			try {
 				bp.evolve();
 				System.out.println(bp);
-				for (Boggle b : bp.getCurrentGeneration()) {
+				for (Board b : bp.getCurrentGeneration()) {
 					System.out.println(b);
 				}
 				System.out.println();
@@ -76,7 +76,7 @@ public class BoggleClient {
 		out.println("Highest:" + highest);
 		// send a migrant to the server
 		// TODO analyze migration frequency
-		Boggle migrant;
+		Board migrant;
 		if (Math.random() < 0.25) {
 			migrant = bp.highest();
 		} else {
@@ -109,12 +109,12 @@ public class BoggleClient {
 	}
 	private void storeServerData(String name, String value) {
 		if (name.equalsIgnoreCase("migrant")) {
-			Boggle migrant = new Boggle(value, sideLength, dict);
+			Board migrant = new Board(value, sideLength, dict);
 			bp.add(migrant);
 		} else if (name.equalsIgnoreCase("pop-cap")) {
 			bp.setPopCap(Integer.parseInt(value));
 		} else if (name.equalsIgnoreCase("reset")) {
-			bp = new BogglePopulation(sideLength, this.startingPopulation,
+			bp = new Population(sideLength, this.startingPopulation,
 			        startingChildrenPerCouple, startingPopCap, dict);
 			highest = null;
 		}
