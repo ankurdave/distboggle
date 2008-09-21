@@ -31,6 +31,7 @@ public class Server {
 		dict = new Dictionary();
 		dict.buildDictionary("words.txt");
 	}
+	// TODO analyze migrant allocation algorithm
 	public synchronized void addMigrant(Board migrant, ServerThread caller) {
 		Collections.sort(threads);
 		for (ServerThread c : threads) {
@@ -45,6 +46,7 @@ public class Server {
 	public synchronized Dictionary getDictionary() {
 		return dict;
 	}
+	// TODO analyze variable pop cap
 	public synchronized int getPopCapForClient(int clientID) {
 		Collections.sort(threads);
 		if (threads.size() == 1) { return DEFAULT_POP_CAP; }

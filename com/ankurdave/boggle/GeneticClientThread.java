@@ -53,7 +53,7 @@ public class GeneticClientThread extends Thread {
 				}
 				// communicate with manager
 				manager.setHighest(bp.highest());
-				// TODO analyze migration frequency
+				// TODO analyze migration algorithm
 				manager.setOutboundMigrant(Util.weightedRandomFromList(bp
 				        .getCurrentGeneration()));
 			}
@@ -75,6 +75,7 @@ public class GeneticClientThread extends Thread {
 	public void setInboundMigrant(Board migrant) {
 		inboundMigrant = migrant;
 	}
+	// TODO analyze variable pop cap
 	public void setPopCap(int popCap) {
 		bp.setPopCap(popCap);
 	}
