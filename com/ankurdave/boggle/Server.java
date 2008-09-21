@@ -1,5 +1,4 @@
 package com.ankurdave.boggle;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -32,8 +31,7 @@ public class Server {
 		dict = new Dictionary();
 		dict.buildDictionary("words.txt");
 	}
-	public synchronized void addMigrant(Board migrant,
-	        ServerThread caller) {
+	public synchronized void addMigrant(Board migrant, ServerThread caller) {
 		Collections.sort(threads);
 		for (ServerThread c : threads) {
 			if ((c.getMigrant() == null || c.getMigrant().getScore() < migrant
@@ -44,7 +42,7 @@ public class Server {
 			}
 		}
 	}
-	public Dictionary getDictionary() {
+	public synchronized Dictionary getDictionary() {
 		return dict;
 	}
 	public synchronized int getPopCapForClient(int clientID) {
@@ -64,8 +62,8 @@ public class Server {
 		try {
 			while (true) {
 				Socket s = socket.accept();
-				ServerThread serverThread = new ServerThread(this,
-				        s, curClientID++);
+				ServerThread serverThread = new ServerThread(this, s,
+				        curClientID++);
 				threads.add(serverThread);
 				serverThread.start();
 				// start the timer
@@ -86,6 +84,9 @@ public class Server {
 				reset();
 			}
 		}
+	}
+	public synchronized void removeThread(ServerThread t) {
+		threads.remove(t);
 	}
 	private void reset() {
 		System.out.println(highest + " "

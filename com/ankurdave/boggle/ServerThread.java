@@ -1,5 +1,4 @@
 package com.ankurdave.boggle;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,9 +10,7 @@ import java.util.regex.Pattern;
  * Thread started by BoggleServer to handle BoggleClients.
  * @author ankur
  */
-public class ServerThread extends Thread
-        implements
-            Comparable<ServerThread> {
+public class ServerThread extends Thread implements Comparable<ServerThread> {
 	private static final Pattern pair = Pattern
 	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
 	private int clientID;
@@ -63,7 +60,18 @@ public class ServerThread extends Thread
 		}
 		catch (IOException e) {
 			System.err.println(e);
-			System.exit(1);
+		}
+		finally {
+			server.removeThread(this);
+			out.close();
+			try {
+				in.close();
+			}
+			catch (IOException e) {}
+			try {
+				socket.close();
+			}
+			catch (IOException e) {}
 		}
 	}
 	public void setMigrant(Board migrant) {
@@ -84,8 +92,14 @@ public class ServerThread extends Thread
 	private void readClientInput() throws IOException {
 		String line;
 		Matcher m;
-		// for each line in the input
-		while (!(line = in.readLine()).isEmpty()) {
+		while (true) {
+			// for each line in the input
+			line = in.readLine();
+			if (line == null) {
+				throw new IOException("Client closed connection");
+			} else if (line.isEmpty()) {
+				break;
+			}
 			// try to find data in it
 			m = pair.matcher(line);
 			if (m.matches()) {

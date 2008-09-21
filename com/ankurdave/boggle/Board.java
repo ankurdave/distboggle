@@ -1,8 +1,7 @@
 package com.ankurdave.boggle;
-
 import java.util.Arrays;
 import java.util.HashSet;
-public class Board implements Comparable<Board> {
+public class Board implements Comparable<Board>, Scorable {
 	class Letter {
 		private char data;
 		private boolean hasBeenHit = false;

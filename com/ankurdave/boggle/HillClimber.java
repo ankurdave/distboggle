@@ -1,5 +1,4 @@
 package com.ankurdave.boggle;
-
 public class HillClimber {
 	public static void main(String[] args) {
 		// create the starting Boggle

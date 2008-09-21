@@ -1,5 +1,4 @@
 package com.ankurdave.boggle;
-
 /**
  * Tests the BoggleEvolution class. Takes as command line arguments:
  * dictionaryPath [sideLength [-]]

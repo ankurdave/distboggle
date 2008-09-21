@@ -1,5 +1,4 @@
 package com.ankurdave.boggle;
-
 import java.util.Scanner;
 public class DictionaryTester {
 	public static void main(String[] args) {

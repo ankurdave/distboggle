@@ -1,5 +1,4 @@
 package com.ankurdave.boggle;
-
 /**
  * Exception thrown when there are insufficient Boggles in the current
  * generation to evolve to the next generation.

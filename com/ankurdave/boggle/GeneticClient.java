@@ -1,5 +1,4 @@
 package com.ankurdave.boggle;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,92 +7,105 @@ import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 public class GeneticClient {
-	private static final Pattern pair = Pattern
-	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
-	private Population bp;
-	private Dictionary dict;
-	private Board highest;
 	private BufferedReader in;
 	private PrintWriter out;
 	private String serverAddress;
 	private int serverPort;
-	private int sideLength;
-	private int startingPopulation, startingChildrenPerCouple, startingPopCap;
+	private static final Pattern pair = Pattern
+	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
+	private GeneticClientThread worker;
+	private Board highest;
+	private Board outboundMigrant;
+	private Boolean highestChanged = true, migrantChanged = true;
+	private Socket socket;
 	public GeneticClient(String serverAddress, int serverPort, String dictPath,
 	        int sideLength, int startingPopulation, int childrenPerCouple,
 	        int popCap) {
-		this.sideLength = sideLength;
 		this.serverAddress = serverAddress;
 		this.serverPort = serverPort;
-		this.startingPopulation = startingPopulation;
-		this.startingChildrenPerCouple = childrenPerCouple;
-		this.startingPopCap = popCap;
-		// init dictionary
-		dict = new Dictionary();
-		dict.buildDictionary(dictPath);
-		// init population
-		bp = new Population(sideLength, this.startingPopulation,
-		        startingChildrenPerCouple, startingPopCap, dict);
+		worker = new GeneticClientThread(dictPath, sideLength,
+		        startingPopulation, childrenPerCouple, popCap, this);
+		connect();
 	}
 	public void connect() {
-		// connect to server
-		try {
-			Socket socket = new Socket(serverAddress, serverPort);
-			out = new PrintWriter(socket.getOutputStream(), true);
-			in = new BufferedReader(new InputStreamReader(socket
-			        .getInputStream()));
-		}
-		catch (IOException e) {
-			System.err.println("Couldn't connect to server: " + e);
-			System.exit(1);
-		}
 		while (true) {
-			// complete a generation
 			try {
-				bp.evolve();
-				System.out.println(bp);
-				for (Board b : bp.getCurrentGeneration()) {
-					System.out.println(b);
-				}
-				System.out.println();
-				if (highest == null
-				        || bp.highest().getScore() > highest.getScore()) {
-					highest = bp.highest();
-				}
-				giveServerOutput();
-				readServerInput();
-			}
-			catch (GenerationEmptyException e) {
-				break;
+				socket = new Socket(serverAddress, serverPort);
+				out = new PrintWriter(socket.getOutputStream(), true);
+				in = new BufferedReader(new InputStreamReader(socket
+				        .getInputStream()));
 			}
 			catch (IOException e) {
-				System.err.println(e);
-				System.exit(1);
+				System.err.println("Couldn't connect to server: " + e);
+				try {
+					Thread.sleep(2000);
+				}
+				catch (InterruptedException ex) {
+					break;
+				}
+				continue; // retry if failure
 			}
+			break; // terminate if success
 		}
 	}
-	private void giveServerOutput() throws GenerationEmptyException {
-		out.println("Highest:" + highest);
-		// send a migrant to the server
-		// TODO analyze migration frequency
-		Board migrant;
-		if (Math.random() < 0.25) {
-			migrant = bp.highest();
-		} else {
-			migrant = bp.random();
+	public void run() {
+		worker.start();
+		try {
+			while (true) {
+				// communicate with server
+				if (highestChanged || migrantChanged) {
+					giveServerOutput();
+				}
+				readServerInput();
+			}
 		}
-		out.println("Migrant:" + migrant);
+		catch (IOException e) {
+			System.err.println(e);
+		}
+		finally {
+			worker.terminate();
+			out.close();
+			try {
+				in.close();
+			}
+			catch (IOException e) {}
+			try {
+				socket.close();
+			}
+			catch (IOException e) {}
+		}
+	}
+	public void setHighest(Board b) {
+		if (highest == null || b.getScore() > highest.getScore()) {
+			highest = b;
+		}
+		highestChanged = true;
+	}
+	public void setOutboundMigrant(Board b) {}
+	private void giveServerOutput() {
+		if (highestChanged && highest != null) {
+			highestChanged = false;
+			out.println("Highest:" + highest);
+		}
+		if (migrantChanged && outboundMigrant != null) {
+			migrantChanged = false;
+			out.println("Migrant:" + outboundMigrant);
+		}
 		// end of transmission
 		out.println();
 		out.flush();
 	}
-	private void readServerInput() throws GenerationEmptyException, IOException {
+	private void readServerInput() throws IOException {
 		String line;
 		Matcher m;
-		// for each line in the input
-		while (!(line = in.readLine()).isEmpty()) {
-			if (line == null) { throw new IOException(
-			        "Server closed connection"); }
+		while (true) {
+			// for each line in the input
+			line = in.readLine();
+			if (line == null) {
+				throw new IOException("Server closed connection");
+			} else if (line.isEmpty()) {
+				break;
+			}
 			// try to find data in it
 			m = pair.matcher(line);
 			if (m.matches()) {
@@ -109,14 +121,14 @@ public class GeneticClient {
 	}
 	private void storeServerData(String name, String value) {
 		if (name.equalsIgnoreCase("migrant")) {
-			Board migrant = new Board(value, sideLength, dict);
-			bp.add(migrant);
+			Board migrant = new Board(value, worker.getSideLength(), worker
+			        .getDictionary());
+			worker.setInboundMigrant(migrant);
 		} else if (name.equalsIgnoreCase("pop-cap")) {
-			bp.setPopCap(Integer.parseInt(value));
+			worker.setPopCap(Integer.parseInt(value));
 		} else if (name.equalsIgnoreCase("reset")) {
-			bp = new Population(sideLength, this.startingPopulation,
-			        startingChildrenPerCouple, startingPopCap, dict);
 			highest = null;
+			worker.reset();
 		}
 	}
 }

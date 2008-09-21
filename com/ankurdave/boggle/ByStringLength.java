@@ -1,5 +1,4 @@
 package com.ankurdave.boggle;
-
 import java.util.Comparator;
 public class ByStringLength implements Comparator<String> {
 	public int compare(String s1, String s2) {

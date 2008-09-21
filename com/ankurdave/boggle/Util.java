@@ -1,5 +1,4 @@
 package com.ankurdave.boggle;
-
 import java.util.List;
 public class Util {
 	/**
@@ -24,7 +23,7 @@ public class Util {
      * successive iterations, every other Boggle gets a weighted chance at
      * replacing the previous Boggle.
      */
-	public Board weightedRandomFromList(List<Board> list) {
+	public static Board weightedRandomFromList(List<Board> list) {
 		int sum = 0;
 		Board result = null;
 		for (Board b : list) {
