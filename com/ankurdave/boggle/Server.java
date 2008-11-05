@@ -84,7 +84,12 @@ public class Server {
 			highest = b;
 			if (highest.getScore() >= 3500) {
 				reset();
+				return;
 			}
+		}
+		
+		if (System.currentTimeMillis() - startTime >= 1000000) {
+			reset();
 		}
 	}
 	public synchronized void removeThread(ServerThread t) {
