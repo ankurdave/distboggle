@@ -82,6 +82,7 @@ public class GeneticClient {
 		highestChanged = true;
 	}
 	public void setOutboundMigrant(Board b) {}
+	// TODO send server the score
 	private void giveServerOutput() {
 		if (highestChanged && highest != null) {
 			highestChanged = false;

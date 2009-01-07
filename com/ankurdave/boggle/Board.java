@@ -224,6 +224,7 @@ public class Board implements Comparable<Board> {
 	public Dictionary getDict() {
 		return dict;
 	}
+	// TODO make this automatically call generate() if score is not set. Then make generate private
 	public int getScore() {
 		return score;
 	}

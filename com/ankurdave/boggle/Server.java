@@ -9,6 +9,7 @@ import java.util.Collections;
  * @author ankur
  */
 public class Server {
+	private int trials = 1;
 	private static final int DEFAULT_POP_CAP = 20;
 	private static final int POP_CAP_RANGE = 0;
 	private int curClientID = 0;
@@ -82,6 +83,7 @@ public class Server {
 	public synchronized void setHighest(Board b) {
 		if (highest == null || b.getScore() > highest.getScore()) {
 			highest = b;
+			System.err.println(highest);
 			if (highest.getScore() >= 3500) {
 				reset();
 				return;
@@ -91,11 +93,16 @@ public class Server {
 		if (System.currentTimeMillis() - startTime >= 1000000) {
 			reset();
 		}
+		
+		if (trials >= 100) {
+			System.exit(0);
+		}
 	}
 	public synchronized void removeThread(ServerThread t) {
 		threads.remove(t);
 	}
 	private void reset() {
+		trials++;
 		System.out.println(highest + " "
 		        + Long.toString(System.currentTimeMillis() - startTime));
 		// reset state
