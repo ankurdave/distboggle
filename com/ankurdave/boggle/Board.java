@@ -185,8 +185,9 @@ public class Board implements Comparable<Board> {
 	}
 	/**
      * Traverses the Boggle board, makes a list of words, and finds the score.
+     *
      */
-	public void generate() {
+	public void generate() { /*@ \label{Board.java:generate} @*/
 		// on each of the letters of the board
 		// traverse the possible words recursively
 		for (int i = 0; i < sideLength; i++) {
@@ -235,10 +236,10 @@ public class Board implements Comparable<Board> {
 		return words;
 	}
 	public String[] getWordsSorted() {
-		String[] words = (String[]) this.words.toArray();
-		Arrays.sort(words, new ByStringLength());
+		String[] wordsArray = (String[]) words.toArray(new String[words.size()]);
+		Arrays.sort(wordsArray, new ByStringLength());
 		// convert to array
-		return words;
+		return wordsArray;
 	}
 	public String gridToString() {
 		String s = "";
@@ -266,7 +267,7 @@ public class Board implements Comparable<Board> {
      * @param that Boggle board to merge with the calling board
      * @return the child board
      */
-	public Board merge(Board that) {
+	public Board merge(Board that) { /*@ \label{Board.java:merge} @*/
 		if (this.sideLength != that.sideLength) { return null; }
 		// init child
 		char[][] childGrid = new char[sideLength][sideLength];
@@ -293,7 +294,7 @@ public class Board implements Comparable<Board> {
 				lower = this;
 			}
 		}
-		// check if the parents are too similar
+		// check if the parents are too similar /*@ \label{Board.java:incest} @*/
 		int sameLetters = 0;
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {

@@ -12,7 +12,7 @@ public class HillClimber {
     		// start the timer
     		long startTime = System.currentTimeMillis();
     		// begin hill climbing
-    		while (current.getScore() < 3500 && (System.currentTimeMillis() - startTime) < 10000) {
+    		while (current.getScore() < 3500 && (System.currentTimeMillis() - startTime) < 1000000) {
     			trial = current.mutate(10);
     			trial.generate();
     			if (trial.getScore() > current.getScore()) {

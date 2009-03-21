@@ -50,7 +50,7 @@ public class Population {
 		}
 		return total / counter;
 	}
-	public void evolve() throws GenerationEmptyException {
+	public void evolve() throws GenerationEmptyException { /*@ \label{Population.java:evolve} @*/
 		if (numBoggles() <= 1) { throw new GenerationEmptyException(
 		        "not enough Boggles in current generation to evolve"); }
 		// sort the current generation by score
@@ -75,16 +75,17 @@ public class Population {
 		// preserved
 		Board highest = currentGeneration.get(currentGeneration.size() - 1);
 		children.add(highest);
-		// make sure there are no duplicates, then rank the boggles
+		// make sure there are no duplicates /*@ \label{Population.java:unique} @*/
 		HashSet<String> uniqueGrids = new HashSet<String>();
 		for (int i = 0; i < children.size(); i++) {
 			Board b = children.get(i);
 			if (uniqueGrids.contains(b.gridToString())) {
 				children.remove(b);
-				continue;
+				continue; // skip scoring duplicate boards
 			} else {
 				uniqueGrids.add(b.gridToString());
 			}
+			// score each unique board
 			b.generate();
 		}
 		Collections.sort(children);

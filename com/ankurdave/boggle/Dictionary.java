@@ -25,7 +25,7 @@ public class Dictionary {
 		child.add(word.substring(1));
 		Collections.sort(this.children);
 	}
-	public boolean beginsWord(String word) {
+	public boolean beginsWord(String word) { /*@ \label{Dictionary.java:beginsWord} @*/
 		int index = Collections.binarySearch(this.children, new Letter(word
 		        .charAt(0)));
 		// return false if child matching the first char of word does not exist

@@ -68,6 +68,13 @@ public class BoardTester {
 		// make the Boggle board from the above information
 		Board board = new Board(grid, path);
 		board.generate();
+
+		String[] words = board.getWordsSorted();
+		
+		for (String word : words) {
+			System.out.println(word);
+		}
+		
 		System.out.println(board);
 	}
 }
