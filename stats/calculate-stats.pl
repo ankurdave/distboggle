@@ -23,5 +23,6 @@ $et = ($mxt - $mnt) / $i;
 $es = ($mxs - $mns) / $i;
 $fail /= $i;
 $fail *= 100;
+$success = 100 - $fail;
 
-print "# of datapoints: $i\naverage time: $tt +- $et\naverage score: $ts +- $es\nfailure %: $fail\n";
+print "# of datapoints: $i\naverage time: $tt +- $et\naverage score: $ts +- $es\nfailure %: $fail\nsuccess %: $success\n";
