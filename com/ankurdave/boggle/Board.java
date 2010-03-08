@@ -46,56 +46,69 @@ public class Board implements Comparable<Board> {
 			        + "; " + "Y=" + getY() + "; " + "hasBeenHit="
 			        + getHasBeenHit() + "]";
 		}
-		public void traverse(String soFar) {
+		/**
+		 * Recursively traverses the board, starting from this Letter.
+		 * @param soFar the String that has been accumulated so far (for use in
+		 * recursive traversal)
+		 * @param parentNode the dictionary letter node associated with the
+		 * parent of this Letter (allows dictionary lookup)
+		 */
+		public void traverse(String soFar, Dictionary.Letter parentNode) {
 			// don't traverse if this has already been used
 			if (hasBeenHit) { return; }
+			
 			soFar += data;
-			// don't traverse deeper if it doesn't begin a word so far
-			if (!dict.beginsWord(soFar.toLowerCase())) { return; }
-			// only add it to the found words if it's longer than 2 chars and is
-			// a word
-			if (soFar.length() > 2 && dict.isWord(soFar.toLowerCase())) {
+			
+			// Verify that the current Letter is a valid part of a word
+			Dictionary.Letter currentNode = parentNode.getChild(data);
+			if (currentNode == null) {
+				return;
+			}
+			
+			// Add to the list of found words if appropriate
+			if (soFar.length() > 2 && parentNode.getEndsWord()) {
 				words.add(soFar);
 			}
-			// mark this Letter as already used so adjacent Letters don't
-			// traverse back onto it
+			
+			// Make sure we don't traverse back onto this node during recursion
 			hasBeenHit = true;
-			// traverse each Letter around this one recursively
+			
+			// Do the recursive traversal
 			// Letter above
 			if (Y - 1 >= 0 && Y - 1 < sideLength) {
-				board[X][Y - 1].traverse(soFar);
+				board[X][Y - 1].traverse(soFar, currentNode);
 			}
 			// Letter below
 			if (Y + 1 >= 0 && Y + 1 < sideLength) {
-				board[X][Y + 1].traverse(soFar);
+				board[X][Y + 1].traverse(soFar, currentNode);
 			}
 			// Letter right
 			if (X + 1 >= 0 && X + 1 < sideLength) {
-				board[X + 1][Y].traverse(soFar);
+				board[X + 1][Y].traverse(soFar, currentNode);
 			}
 			// Letter left
 			if (X - 1 >= 0 && X - 1 < sideLength) {
-				board[X - 1][Y].traverse(soFar);
+				board[X - 1][Y].traverse(soFar, currentNode);
 			}
 			// Letter up-left
 			if (X - 1 >= 0 && X - 1 < sideLength && Y - 1 >= 0
 			        && Y - 1 < sideLength) {
-				board[X - 1][Y - 1].traverse(soFar);
+				board[X - 1][Y - 1].traverse(soFar, currentNode);
 			}
 			// Letter up-right
 			if (X + 1 >= 0 && X + 1 < sideLength && Y - 1 >= 0
 			        && Y - 1 < sideLength) {
-				board[X + 1][Y - 1].traverse(soFar);
+				board[X + 1][Y - 1].traverse(soFar, currentNode);
 			}
 			// Letter down-left
 			if (X - 1 >= 0 && X - 1 < sideLength && Y + 1 >= 0
 			        && Y + 1 < sideLength) {
-				board[X - 1][Y + 1].traverse(soFar);
+				board[X - 1][Y + 1].traverse(soFar, currentNode);
 			}
 			// Letter down-right
 			if (X + 1 >= 0 && X + 1 < sideLength && Y + 1 >= 0
 			        && Y + 1 < sideLength) {
-				board[X + 1][Y + 1].traverse(soFar);
+				board[X + 1][Y + 1].traverse(soFar, currentNode);
 			}
 			// now that this word attempt has finished, it's OK for other
 			// letters to traverse onto this one
@@ -192,7 +205,7 @@ public class Board implements Comparable<Board> {
 		// traverse the possible words recursively
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
-				board[i][j].traverse("");
+				board[i][j].traverse("", dict.getRoot());
 			}
 		}
 		int score = 0;

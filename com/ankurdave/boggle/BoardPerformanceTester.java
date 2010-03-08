@@ -2,7 +2,7 @@ package com.ankurdave.boggle;
 
 public class BoardPerformanceTester {
 	private static final int SIDE_LENGTH = 4;
-	private static final int NUM_BOARDS = 1000;
+	private static final int NUM_BOARDS = 10000;
 	
 	public static void main(String[] args) {
 		char[][] grid = new char[SIDE_LENGTH][SIDE_LENGTH];
@@ -24,7 +24,7 @@ public class BoardPerformanceTester {
 			System.out.println(board);
 		}
 		long time = System.nanoTime() - startTime;
-		double secPerBoard = (double)time / NUM_BOARDS * 1e-9;
-		System.out.println(NUM_BOARDS + " boards in " + time + " ns. " + secPerBoard + " sec/board.");
+		double boardsPerSec = (double) NUM_BOARDS / (time * 1e-9);
+		System.out.println(NUM_BOARDS + " in " + time + " ns. " + boardsPerSec + " boards/sec.");
 	}
 }
