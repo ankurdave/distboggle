@@ -24,7 +24,7 @@ public class Dictionary {
 				temp = file.nextLine().toLowerCase();
 				this.add(temp);
 			}
-			this.optimize();
+//			this.optimize();
 		}
 		catch (FileNotFoundException e) {
 			System.out.println("file " + path + " not found!");
@@ -46,21 +46,122 @@ public class Dictionary {
 	 * for speed once it has been fully built.
 	 */
 	public void optimize() {
+		compressSuffixes();
 		root.optimize();
+		
 		System.gc();
 	}
 	@Override public String toString() {
 		return "Dictionary[]";
+	}
+	/**
+	 * Converts a trie (redundant suffix information) into the equivalent DAWG, to save space.
+	 */
+	private void compressSuffixes() {
+		root.compressSuffixes();
+	}
+	/**
+	 * Counts the number of unique nodes (Letters) in the trie.
+	 */
+	public int numNodes() {
+		ArrayList<Letter> allNodes = root.getAllNodes();
+		
+		// Return the number of unique nodes
+		return allNodes.size();
 	}
 	
 	class Letter implements Comparable<Letter> {
 		private char data;
 		private boolean endsWord = false;
 		private ArrayList<Letter> children;
+		private boolean copy = false;
 		public Letter(char data) {
 			this.children = new ArrayList<Letter>();
 			this.data = Character.toLowerCase(data);
 		}
+		public void compressSuffixes() {
+			// Generate the hashes of each child's children to avoid redundant comparisons
+			int[] childrenHashes = new int[children.size()];
+			for (int i = 0; i < children.size(); i++) {
+				childrenHashes[i] = children.get(i).subtreeHashCode();
+			}
+			
+			// For each pair of children, merge their children if hash codes are the same and a deep equality test agrees
+			// TODO: this is O(n^2). It could be O(n log n) if we sorted the array. Not too big a deal because n <= 26.
+			for (int i = 0; i < children.size(); i++) {
+				for (int j = i + 1; j < children.size(); j++) {
+					if (childrenHashes[i] == childrenHashes[j] && children.get(i).subtreeEquals(children.get(j))) {
+						children.get(i).mergeChildren(children.get(j));
+					}
+				}
+			}
+			
+			// Recurse
+			for (Letter child : children) {
+				child.compressSuffixes();
+			}
+		}
+		/**
+		 * Copies the children of the given Letter over the children of this Letter. Useful for compressing the tree.
+		 * Warning: it's a shallow copy, so modifying the children of the given Letter will affect this Letter, and vice versa. So don't call this unless no more changes will be made to the tree.
+		 */
+		private void mergeChildren(Letter letter) {
+			this.children = letter.children;
+			this.copy = true;
+		}
+		public boolean isCopy() {
+			return copy;
+		}
+		/**
+		 * Recursively checks if the subtrees of this and the given Letters (not including the Letters themselves) store the same characters, have the same connections, and have the same word ending markers.
+		 * @param letter
+		 * @return
+		 */
+		private boolean subtreeEquals(Letter that) {
+			// The number of children has to be the same
+			if (this.children.size() != that.children.size()) {
+				return false;
+			}
+			
+			// Iterate over the children in parallel and check for Letter and subtree equality
+			for (int i = 0; i < this.children.size(); i++) {
+				if (!this.children.get(i).equals(that.children.get(i)) || !this.children.get(i).subtreeEquals(that.children.get(i))) {
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Generates a hash code for the subtree of this Letter.
+		 */
+		private int subtreeHashCode() {
+			int hash = 0;
+			for (Letter child : children) {
+				hash ^= child.hashCode();
+				hash ^= child.subtreeHashCode();
+			}
+			return hash;
+		}
+		
+		/**
+		 * Checks whether or not the given Letter and this Letter are directly equal. Does not recurse (see subtreeEquals(Letter) if you want that).
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			Letter that = (Letter) obj;
+			return this.data == that.data && this.endsWord == that.endsWord;
+		}
+		
+		/**
+		 * Generates a hash code for this Letter only. Does not recurse.
+		 */
+		@Override
+		public int hashCode() {
+			return (int)data ^ (endsWord ? 1 : 0);
+		}
+		
 		public void add(String word) {
 			if (word.length() == 0) {
 				this.endsWord = true;
@@ -146,6 +247,23 @@ public class Dictionary {
 				s += "\n" + a;
 			}
 			return s;
+		}
+		/**
+		 * Returns a flattened, deduplicated list of all the nodes in the the tree, including the current one.
+		 */
+		public ArrayList<Letter> getAllNodes() {
+			if (isCopy()) {
+				return new ArrayList<Letter>(0);
+			}
+			
+			ArrayList<Letter> allNodes = new ArrayList<Letter>(children.size() + 1); // the "+ 1" is for this
+
+			allNodes.add(this);
+			for (Letter child : children) {
+				allNodes.addAll(child.getAllNodes());
+			}
+
+			return allNodes;
 		}
 	}
 
