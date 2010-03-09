@@ -66,7 +66,7 @@ public class Board implements Comparable<Board> {
 			}
 			
 			// Add to the list of found words if appropriate
-			if (soFar.length() > 2 && parentNode.getEndsWord()) {
+			if (soFar.length() > 2 && currentNode.getEndsWord()) {
 				words.add(soFar);
 			}
 			
