@@ -69,6 +69,12 @@ public class Dictionary {
 		// Return the number of unique nodes
 		return allNodes.size();
 	}
+
+	public ArrayList<String> getAllWords() {
+		ArrayList<String> words = new ArrayList<String>();
+		root.accumulateWords(words, "");
+		return words;
+	}
 	
 	class Letter implements Comparable<Letter> {
 		private char data;
@@ -80,7 +86,7 @@ public class Dictionary {
 			this.data = Character.toLowerCase(data);
 		}
 		public void compressSuffixes() {
-			// Generate the hashes of each child's children to avoid redundant comparisons
+			// Generate the hashes of each child's subtree to avoid redundant comparisons
 			int[] childrenHashes = new int[children.size()];
 			for (int i = 0; i < children.size(); i++) {
 				childrenHashes[i] = children.get(i).subtreeHashCode();
@@ -92,6 +98,7 @@ public class Dictionary {
 				for (int j = i + 1; j < children.size(); j++) {
 					if (childrenHashes[i] == childrenHashes[j] && children.get(i).subtreeEquals(children.get(j))) {
 						children.get(i).mergeChildren(children.get(j));
+						//System.out.println("Saved -" + children.get(i).getLongestWord());
 					}
 				}
 			}
@@ -112,6 +119,33 @@ public class Dictionary {
 		public boolean isCopy() {
 			return copy;
 		}
+		private String getLongestWord() {
+			if (this.children.size() == 0) {
+				return Character.toString(this.data);
+			}
+			
+			// Get the one with maximum length
+			String longestWord = "";
+			for (Letter child : children) {
+				String word = child.getLongestWord();
+				if (word.length() > longestWord.length()) {
+					longestWord = word;
+				}
+			}
+
+			return Character.toString(this.data) + longestWord;
+		}
+
+		public void accumulateWords(ArrayList<String> words, String currentWord) {
+			if (this.endsWord) {
+				words.add(currentWord + this.data);
+			}
+
+			for (Letter child : children) {
+				child.accumulateWords(words, currentWord + this.data);
+			}
+		}
+			
 		/**
 		 * Recursively checks if the subtrees of this and the given Letters (not including the Letters themselves) store the same characters, have the same connections, and have the same word ending markers.
 		 * @param letter
@@ -182,14 +216,23 @@ public class Dictionary {
 			Collections.sort(this.children);
 		}
 		public boolean beginsWord(String word) {
-			int index = Collections.binarySearch(this.children, new Letter(word
-			        .charAt(0)));
-			// return false if child matching the first char of word does not exist
-			if (index < 0) { return false; }
-			// otherwise, check base case
+			// base case
 			if (word.length() == 1) { return true; }
-			// otherwise, traverse recursively
-			return children.get(index).beginsWord(word.substring(1));
+
+			Letter match = null;
+			for (Letter child : children) {
+				if (word.charAt(0) == child.getData()) {
+					match = child;
+					break;
+				}
+			}
+			
+			if (match == null) {
+				return false;
+			}
+			
+			// traverse recursively
+			return match.beginsWord(word.substring(1));
 		}
 		public boolean isWord(String word) {
 			int index = Collections.binarySearch(this.children, new Letter(word
@@ -256,7 +299,7 @@ public class Dictionary {
 				return new ArrayList<Letter>(0);
 			}
 			
-			ArrayList<Letter> allNodes = new ArrayList<Letter>(children.size() + 1); // the "+ 1" is for this
+			ArrayList<Letter> allNodes = new ArrayList<Letter>();
 
 			allNodes.add(this);
 			for (Letter child : children) {
