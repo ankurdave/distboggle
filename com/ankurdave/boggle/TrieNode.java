@@ -12,7 +12,6 @@ public class TrieNode {
 	private int data = 0;
 	
 	public TrieNode() {
-		this.children = new TrieNode[26]; // TODO: use lazy allocation
 	}
 	
 	/**
@@ -52,13 +51,18 @@ public class TrieNode {
 	 */
 	public TrieNode getChild(char letter) {
 		int letterIndex = charToIndex(letter);
-		return children[letterIndex];
+		return getChild(letterIndex);
 	}
 	
 	/**
 	 * Gets the child at the given index, or null if it doesn't exist.
 	 */
 	public TrieNode getChild(int index) {
+		// Support lazy allocation of children array
+		if (children == null) {
+			return null;
+		}
+
 		return children[index];
 	}
 	
@@ -67,13 +71,18 @@ public class TrieNode {
 	 */
 	public void setChild(char letter, TrieNode child) {
 		int letterIndex = charToIndex(letter);
-		children[letterIndex] = child;
+		setChild(letterIndex, child);
 	}
 	
 	/**
 	 * Sets the child at the given index to the given TrieNode object.
 	 */
 	public void setChild(int index, TrieNode child) {
+		// Lazily allocate the children array
+		if (children == null) {
+			children = new TrieNode[26];
+		}
+
 		children[index] = child;
 	}
 	
