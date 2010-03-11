@@ -21,7 +21,7 @@ public class Server {
 	private long startTime;
 	private ArrayList<ServerThread> threads = new ArrayList<ServerThread>();
 	
-	public Server(int port) {
+	public Server(int port, String dictPath) {
 		// create the socket
 		socket = null;
 		try {
@@ -32,7 +32,7 @@ public class Server {
 		}
 		// create the dictionary
 		dict = new Dictionary();
-		dict.buildDictionary("words.txt");
+		dict.buildDictionary(dictPath);
 	}
 	
 	// TODO analyze migrant allocation algorithm

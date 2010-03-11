@@ -10,8 +10,13 @@ import java.util.HashSet;
  */
 public class DictionaryTester {
 	public static void main(String[] args) {
+		// Set variables from args
+		String dictPath = "words.txt";
+		if (args.length >= 1) {
+			dictPath = args[0];
+		}
+		
 		// Create the dictionary
-		String dictPath = args[0];
 		Dictionary d = new Dictionary();
 		System.out.print("Generating...");
 		d.buildDictionary(dictPath);

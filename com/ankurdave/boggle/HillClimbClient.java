@@ -11,14 +11,30 @@ public class HillClimbClient {
 	static int clientID;
 	
 	public static void main(String[] args) throws IOException {
+		// Set variables from args
+		String serverIP = "192.168.1.123";
+		if (args.length >= 1) {
+			serverIP = args[0];
+		}
+		
+		int serverPort = 4444;
+		if (args.length >= 2) {
+			serverPort = Integer.parseInt(args[1]);
+		}
+		
+		String dictPath = "words.txt";
+		if (args.length >= 3) {
+			dictPath = args[2];
+		}
+		
 		Dictionary dict = new Dictionary();
-		dict.buildDictionary("words.txt");
+		dict.buildDictionary(dictPath);
 		// connect to the server
 		Socket echoSocket = null;
 		PrintWriter out = null;
 		BufferedReader in = null;
 		try {
-			echoSocket = new Socket("192.168.1.223", 4444);
+			echoSocket = new Socket(serverIP, serverPort);
 			out = new PrintWriter(echoSocket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(echoSocket
 					.getInputStream()));

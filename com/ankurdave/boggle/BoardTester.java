@@ -8,57 +8,56 @@ public class BoardTester {
 	static char[][] grid;
 	static String gridImage = "";
 	static Scanner in = new Scanner(System.in);
-	static int SIDE_LENGTH;
 	static Scanner tempIn;
 	
 	public static void main(String[] args) {
-		// need at least 1 argument
-		if (args.length < 1) {
-			System.out
-					.println("Usage: java BoggleTester dictionaryPath [sideLength [gridPath]]");
-			System.exit(-1);
+		// Set variables from args
+		String gridPath = "";
+		if (args.length >= 1) {
+			gridPath = args[0];
 		}
-		// first argument: path of dictionary file
-		String path = args[0];
-		// second argument (optional): side length
+		
+		int sideLength = 4;
 		if (args.length >= 2) {
-			SIDE_LENGTH = Integer.parseInt(args[1]);
-		} else {
-			System.out.print("Length of a side of the Boggle board: ");
-			SIDE_LENGTH = in.nextInt();
+			sideLength = Integer.parseInt(args[1]);
 		}
-		// third argument (optional):
+		
+		// Set variables from args
+		String dictionaryPath = "words.txt";
 		if (args.length >= 3) {
-			// can be either a path or a -
-			// if it's a -, prompt the user for the board
-			// otherwise, read it in from the given path
-			if (args[2].equals("-")) {
+			dictionaryPath = args[2];
+		}
+		
+		// If gridPath is -, prompt the user for the board.
+		// If it's something else, read from that file.
+		// If it's empty, make a random board.
+		if (!gridPath.isEmpty()) {
+			if (gridPath.equals("-")) {
 				tempIn = new Scanner(System.in);
-				System.out.println("Enter a " + SIDE_LENGTH + "x" + SIDE_LENGTH
+				System.out.println("Enter a " + sideLength + "x" + sideLength
 						+ " Boggle board:");
 			} else {
 				try {
 					tempIn = new Scanner(new File(args[2]));
 				} catch (FileNotFoundException e) {
-					System.out.println("File " + path + " not found!");
+					System.out.println("File " + dictionaryPath + " not found!");
 					System.exit(-1);
 				}
 			}
 			String temp;
-			grid = new char[SIDE_LENGTH][SIDE_LENGTH];
-			for (int i = 0; i < SIDE_LENGTH; i++) {
+			grid = new char[sideLength][sideLength];
+			for (int i = 0; i < sideLength; i++) {
 				temp = tempIn.nextLine();
 				for (int j = 0; j < temp.length(); j++) {
 					grid[i][j] = temp.charAt(j);
 				}
 			}
 		} else {
-			// make a random grid
 			System.out.println("Randomly generated Boggle board:");
-			grid = new char[SIDE_LENGTH][SIDE_LENGTH];
+			grid = new char[sideLength][sideLength];
 			gridImage = "";
-			for (int i = 0; i < SIDE_LENGTH; i++) {
-				for (int j = 0; j < SIDE_LENGTH; j++) {
+			for (int i = 0; i < sideLength; i++) {
+				for (int j = 0; j < sideLength; j++) {
 					grid[i][j] = (char) (Math.random() * (90 - 65 + 1) + 65);
 					gridImage += grid[i][j] + " ";
 				}
@@ -68,17 +67,13 @@ public class BoardTester {
 			System.out.println(gridImage);
 		}
 		
-		// make the Boggle board from the above information
+		// Make the Boggle board from the above information
 		Dictionary dict = new Dictionary();
-		dict.buildDictionary(path);
+		dict.buildDictionary(dictionaryPath);
 		Board board = new Board(grid, dict);
 		board.generate();
 		
-		// String[] words = board.getWordsSorted();
-		//		
-		// for (String word : words) {
-		// System.out.println(word);
-		// }
+		// TODO: print out the list of found words
 		
 		System.out.println(board);
 	}
