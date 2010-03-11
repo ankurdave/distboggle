@@ -12,7 +12,7 @@ public class TrieNode {
 	private int data = 0;
 	
 	public TrieNode() {
-		this.children = new TrieNode[26];
+		this.children = new TrieNode[26]; // TODO: use lazy allocation
 	}
 	
 	/**
