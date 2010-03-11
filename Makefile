@@ -15,4 +15,4 @@ $(OBJECT_DIR)/%.class: %.java $(OBJECT_DIR)
 	javac $< -d $(OBJECT_DIR)
 
 clean:
-	rm $(OBJECT_DIR)
+	rm -r $(OBJECT_DIR)

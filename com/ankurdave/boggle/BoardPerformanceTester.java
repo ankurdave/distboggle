@@ -8,7 +8,7 @@ public class BoardPerformanceTester {
 		char[][] grid = new char[SIDE_LENGTH][SIDE_LENGTH];
 		Board board;
 		Dictionary dict = new Dictionary();
-		dict.buildDictionary("/home/ankur/notes/yawl.txt");
+		dict.buildDictionary("/home/ankur/notes/twl.txt");
 		
 		long startTime = System.nanoTime();
 		for (int iter = 0; iter < NUM_BOARDS; iter++) {
@@ -18,7 +18,7 @@ public class BoardPerformanceTester {
 				}
 			}
 			board = new Board(grid, dict);
-		
+			
 			board.generate();
 			
 			System.out.println(board);

@@ -1,193 +1,76 @@
 package com.ankurdave.boggle;
-import java.util.Arrays;
-import java.util.HashSet;
+
+import java.util.Random;
+
+
+/**
+ * Represents a Boggle board.
+ */
 public class Board implements Comparable<Board> {
-	class Letter {
-		private char data;
-		private boolean hasBeenHit = false;
-		private int X;
-		private int Y;
-		public Letter(char data, int X, int Y) {
-			this.data = data;
-			this.X = X;
-			this.Y = Y;
-		}
-		@Override public Letter clone() {
-			Letter thisClone = new Letter(data, X, Y);
-			thisClone.setHasBeenHit(hasBeenHit);
-			return thisClone;
-		}
-		@Override public boolean equals(Object o) {
-			Letter that = (Letter) o;
-			if (this.getData() == that.getData() && this.getX() == that.getX()
-			        && this.getY() == that.getY()) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-		public char getData() {
-			return data;
-		}
-		public boolean getHasBeenHit() {
-			return hasBeenHit;
-		}
-		public int getX() {
-			return X;
-		}
-		public int getY() {
-			return Y;
-		}
-		public void setHasBeenHit(boolean hasBeenHit) {
-			this.hasBeenHit = hasBeenHit;
-		}
-		@Override public String toString() {
-			return "Letter[" + "data=" + getData() + "; " + "X=" + getX()
-			        + "; " + "Y=" + getY() + "; " + "hasBeenHit="
-			        + getHasBeenHit() + "]";
-		}
-		/**
-		 * Recursively traverses the board, starting from this Letter.
-		 * @param soFar the String that has been accumulated so far (for use in
-		 * recursive traversal)
-		 * @param parentNode the dictionary letter node associated with the
-		 * parent of this Letter (allows dictionary lookup)
-		 */
-		public void traverse(String soFar, Dictionary.Letter parentNode) {
-			// don't traverse if this has already been used
-			if (hasBeenHit) { return; }
-			
-			soFar += data;
-			
-			// Verify that the current Letter is a valid part of a word
-			Dictionary.Letter currentNode = parentNode.getChild(data);
-			if (currentNode == null) {
-				return;
-			}
-			
-			// Add to the list of found words if appropriate
-			if (soFar.length() > 2 && currentNode.getEndsWord()) {
-				words.add(soFar);
-			}
-			
-			// Make sure we don't traverse back onto this node during recursion
-			hasBeenHit = true;
-			
-			// Do the recursive traversal
-			// Letter above
-			if (Y - 1 >= 0 && Y - 1 < sideLength) {
-				board[X][Y - 1].traverse(soFar, currentNode);
-			}
-			// Letter below
-			if (Y + 1 >= 0 && Y + 1 < sideLength) {
-				board[X][Y + 1].traverse(soFar, currentNode);
-			}
-			// Letter right
-			if (X + 1 >= 0 && X + 1 < sideLength) {
-				board[X + 1][Y].traverse(soFar, currentNode);
-			}
-			// Letter left
-			if (X - 1 >= 0 && X - 1 < sideLength) {
-				board[X - 1][Y].traverse(soFar, currentNode);
-			}
-			// Letter up-left
-			if (X - 1 >= 0 && X - 1 < sideLength && Y - 1 >= 0
-			        && Y - 1 < sideLength) {
-				board[X - 1][Y - 1].traverse(soFar, currentNode);
-			}
-			// Letter up-right
-			if (X + 1 >= 0 && X + 1 < sideLength && Y - 1 >= 0
-			        && Y - 1 < sideLength) {
-				board[X + 1][Y - 1].traverse(soFar, currentNode);
-			}
-			// Letter down-left
-			if (X - 1 >= 0 && X - 1 < sideLength && Y + 1 >= 0
-			        && Y + 1 < sideLength) {
-				board[X - 1][Y + 1].traverse(soFar, currentNode);
-			}
-			// Letter down-right
-			if (X + 1 >= 0 && X + 1 < sideLength && Y + 1 >= 0
-			        && Y + 1 < sideLength) {
-				board[X + 1][Y + 1].traverse(soFar, currentNode);
-			}
-			// now that this word attempt has finished, it's OK for other
-			// letters to traverse onto this one
-			hasBeenHit = false;
-		}
-	}
-	private int age = 1;
 	private Letter[][] board;
 	private Dictionary dict;
-	private char[][] grid;
-	private int score;
 	private int sideLength;
-	private HashSet<String> words = new HashSet<String>();
+	private int score;
+	private boolean scoreHasBeenCalculated = false;
+	
+	/**
+	 * Creates a Board from a square array of characters.
+	 */
 	public Board(char[][] grid, Dictionary dict) {
 		assert grid.length == grid[0].length;
 		assert grid.length > 0;
 		assert dict != null;
-		sideLength = grid.length;
-		this.grid = grid;
+		
+		this.sideLength = grid.length;
 		this.dict = dict;
-		// make board from grid
-		board = new Letter[sideLength][sideLength];
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
-				board[i][j] = new Letter(grid[i][j], i, j);
-			}
-		}
+		this.board = makeLettersFromGrid(grid, sideLength);
 	}
-	public Board(char[][] grid, String path) {
-		assert grid.length == grid[0].length;
-		assert grid.length > 0;
-		sideLength = grid.length;
-		this.grid = grid;
-		dict = new Dictionary();
-		dict.buildDictionary(path);
-		// make board from grid
-		board = new Letter[sideLength][sideLength];
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
-				board[i][j] = new Letter(grid[i][j], i, j);
-			}
-		}
-	}
+	
+	/**
+	 * Creates a Board from a string of the form "ABCDEFGHIJKLMNOP 25".
+	 */
 	public Board(String s, int sideLength, Dictionary dict) {
-		// TODO: error handling
 		String[] parts = s.split(" ", 2);
-		String gridS = parts[0];
-		int score = Integer.parseInt(parts[1]);
-		char[][] grid = new char[sideLength][sideLength];
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
-				grid[i][j] = gridS.charAt(i * sideLength + j);
-			}
-		}
-		assert grid.length == grid[0].length;
-		assert grid.length > 0;
-		this.score = score;
-		this.grid = grid;
+		this.board = makeLettersFromString(parts[0], sideLength);
+		this.score = Integer.parseInt(parts[1]);
 		this.sideLength = sideLength;
 		this.dict = dict;
-		// make board from grid
-		board = new Letter[sideLength][sideLength];
+	}
+	
+	/**
+	 * Converts a square array of characters into a square array of Letters.
+	 */
+	private Letter[][] makeLettersFromGrid(char[][] grid, int sideLength) {
+		Letter[][] letters = new Letter[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
-				board[i][j] = new Letter(grid[i][j], i, j);
+				letters[i][j] = new Letter(grid[i][j], i, j);
 			}
 		}
+		return letters;
 	}
-	@Override public Board clone() {
-		Letter[][] boardClone = new Letter[sideLength][sideLength];
+	
+	/**
+	 * Converts a string like "ABCDEFGHIJKLMNOP" into a square array of Letters.
+	 */
+	private Letter[][] makeLettersFromString(String s, int sideLength) {
+		Letter[][] letters = new Letter[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
-				boardClone[i][j] = board[i][j].clone();
+				letters[i][j] = new Letter(s.charAt(i * sideLength + j), i, j);
 			}
 		}
-		Board thisClone = new Board(grid, dict);
-		return thisClone;
+		
+		return letters;
 	}
+	
+	/**
+	 * Compares two Boards based on score.
+	 */
 	public int compareTo(Board that) {
+		this.generate();
+		that.generate();
+		
 		if (this.getScore() > that.getScore()) {
 			return 1;
 		} else if (this.getScore() < that.getScore()) {
@@ -196,174 +79,163 @@ public class Board implements Comparable<Board> {
 			return 0;
 		}
 	}
+	
 	/**
-     * Traverses the Boggle board, makes a list of words, and finds the score.
-     *
-     */
-	public void generate() { /*@ \label{Board.java:generate} @*/
-		// on each of the letters of the board
-		// traverse the possible words recursively
+	 * Calculates the score of the Board based on how many words it contains. Caches the data, avoiding recalculation when possible.
+	 * 
+	 */
+	public void generate() { /* @ \label{Board.java:generate} @ */
+		// Don't recalculate
+		if (scoreHasBeenCalculated) {
+			return;
+		}
+		
+		// Traverse the possible words recursively, starting with each Letter, and accumulate the score
+		int score = 0;
+		Random rand = new Random();
+		int randID = rand.nextInt();
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
-				board[i][j].traverse("", dict.getRoot());
-			}
-		}
-		int score = 0;
-		Object[] words = getWords().toArray();
-		for (Object word : words) {
-			String wordString = (String) word;
-			int length = wordString.length();
-			// minimum length is 3
-			if (length < 3) {
-				continue;
-			}
-			// calculate score
-			if (length == 3 || length == 4) {
-				score += 1;
-			} else if (length == 5) {
-				score += 2;
-			} else if (length == 6) {
-				score += 3;
-			} else if (length == 7) {
-				score += 5;
-			} else if (length >= 8) {
-				score += 11;
+				score += board[i][j].traverse(dict.getRoot(), randID, 0);
 			}
 		}
 		this.score = score;
 	}
-	public int getAge() {
-		return age;
+	
+	/**
+	 * Returns the score of a word with a given length according to Boggle rules.
+	 */
+	public static int scoreWordLength(int length) {
+		if (length < 3) {
+			return 0;
+		} else if (length == 3 || length == 4) {
+			return 1;
+		} else if (length == 5) {
+			return 2;
+		} else if (length == 6) {
+			return 3;
+		} else if (length == 7) {
+			return 5;
+		} else {
+			return 11;
+		}
 	}
-	public Dictionary getDict() {
-		return dict;
-	}
-	// TODO make this automatically call generate() if score is not set. Then make generate private
+	
+	/**
+	 * Retrieves the Board's score. Make sure to call generate() first.
+	 */
 	public int getScore() {
 		return score;
 	}
-	public int getSideLength() {
-		return sideLength;
-	}
-	public HashSet<String> getWords() {
-		return words;
-	}
-	public String[] getWordsSorted() {
-		String[] wordsArray = (String[]) words.toArray(new String[words.size()]);
-		Arrays.sort(wordsArray, new ByStringLength());
-		// convert to array
-		return wordsArray;
-	}
-	public String gridToString() {
-		String s = "";
-		for (char c[] : grid) {
-			for (char d : c) {
-				s += d;
-			}
-		}
-		return s;
-	}
-	public void incrementAge() {
-		age++;
-	}
+	
 	/**
-     * Merges two Boggle boards randomly.<BR>
-     * Calculates the score of each board and on each character in the grid,
-     * chooses randomly between three choices for the child:
-     * <UL>
-     * <LI>use the character from the higher-scoring grid (weighted 6.6/10, or
-     * 6/10 if incestuous)
-     * <LI>use the character from the lower-scoring grid (weighted 3.3/10, or
-     * 3/10 if incestuous)
-     * <LI>use a random character (weighted 0.1/10, or 1/10 if incestuous)
-     * </UL>
-     * @param that Boggle board to merge with the calling board
-     * @return the child board
-     */
-	public Board merge(Board that) { /*@ \label{Board.java:merge} @*/
-		if (this.sideLength != that.sideLength) { return null; }
-		// init child
-		char[][] childGrid = new char[sideLength][sideLength];
-		// determine which one is higher or lower
-		Board higher;
-		Board lower;
-		// caller is higher
-		if (this.getScore() > that.getScore()) {
-			higher = this;
-			lower = that;
-		}
-		// parameter is higher
-		else if (that.getScore() < this.getScore()) {
-			higher = that;
-			lower = this;
-		}
-		// they are equal; choose randomly
-		else {
-			if ((int) (Math.random() * 2) == 0) {
-				higher = this;
-				lower = that;
-			} else {
-				higher = that;
-				lower = this;
+	 * Converts the array of Letters in this Board into a string like "ABCDEFGHIJKLMNOP".
+	 */
+	public String gridToString() {
+		StringBuilder gridString = new StringBuilder();
+		for (Letter row[] : board) {
+			for (Letter letter : row) {
+				gridString.append(letter.getData());
 			}
 		}
-		// check if the parents are too similar /*@ \label{Board.java:incest} @*/
-		int sameLetters = 0;
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
-				if (higher.grid[i][j] == lower.grid[i][j]) {
-					sameLetters++;
-				}
-			}
-		}
-		// if they are, mark it as incestuous
-		boolean incest = (float) sameLetters / (sideLength * sideLength) >= 0.85;
-		double higherChance = 6.6, lowerChance = 3.3;
-		if (incest) {
-			higherChance = 6;
-			lowerChance = 3;
-		}
-		// construct the child grid
-		double temp;
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
-				temp = Math.random() * 10; // 0-9.9
-				// higher
-				if (temp >= 0 && temp < higherChance) {
-					childGrid[i][j] = higher.grid[i][j];
-				} else if (temp >= higherChance
-				        && temp < (higherChance + lowerChance)) {
-					// 6-9
-					childGrid[i][j] = lower.grid[i][j];
-				} else {
-					// 9.9-10 or 9-10
-					childGrid[i][j] = randomLetter();
-				}
-			}
-		}
-		// make the child board
-		Board child = new Board(childGrid, dict);
-		return child;
+		return gridString.toString();
 	}
-	public Board mutate(int mutationProbability) {
-		assert mutationProbability >= 0 && mutationProbability <= 100;
-		char[][] gridMutated = new char[sideLength][sideLength];
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
-				if ((int) (Math.random() * 100) < mutationProbability) {
-					gridMutated[i][j] = randomLetter();
-				} else {
-					gridMutated[i][j] = grid[i][j];
-				}
-			}
-		}
-		Board thisMutated = new Board(gridMutated, dict);
-		return thisMutated;
-	}
-	@Override public String toString() {
+	
+	@Override
+	public String toString() {
 		return gridToString() + " " + getScore();
 	}
-	private char randomLetter() {
+	
+	/**
+	 * Generates a random lowercase letter from a to z.
+	 */
+	public static char randomLetter() {
 		return (char) (Math.random() * (90 - 65 + 1) + 65);
+	}
+	
+	protected class Letter {
+		private char data;
+		private boolean hasBeenHit = false;
+		private int X;
+		private int Y;
+		
+		public Letter(char data, int X, int Y) {
+			this.data = data;
+			this.X = X;
+			this.Y = Y;
+		}
+		
+		public char getData() {
+			return data;
+		}
+		
+		/**
+		 * Finds the score resulting from a recursive traversal of the board, starting with this Letter.
+		 * 
+		 * @param parentNode the dictionary letter node associated with the parent of this Letter (allows dictionary lookup)
+		 * @param traversalID an integer unique to this set of traversal calls (allows trie annotation)
+		 * @param wordLengthSoFar the current traversal depth (allows score calculation)
+		 */
+		public int traverse(TrieNode parentNode, int traversalID, int wordLengthSoFar) {
+			// If this Letter has already been used in the current traversal, don't reuse it
+			if (hasBeenHit) {
+				return 0;
+			}
+			
+			// Traverse the trie in parallel with the board traversal
+			TrieNode currentNode = parentNode.getChild(data);
+			
+			// If, according to the trie, there are no valid words with the current prefix, don't bother traversing
+			if (currentNode == null) {
+				return 0;
+			}
+			
+			// If the current node ended a word that hasn't already been found, add to the total score
+			int totalScore = 0;
+			if (currentNode.endsWord() && currentNode.getData() != traversalID) {
+				currentNode.setData(traversalID);
+				totalScore += Board.scoreWordLength(wordLengthSoFar);
+			}
+			
+			// Recurse, accumulating the total score
+			// Make sure we don't traverse back onto this node during recursion
+			hasBeenHit = true;
+			// Letter above
+			if (Y - 1 >= 0 && Y - 1 < sideLength) {
+				totalScore += board[X][Y - 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
+			}
+			// Letter below
+			if (Y + 1 >= 0 && Y + 1 < sideLength) {
+				totalScore += board[X][Y + 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
+			}
+			// Letter right
+			if (X + 1 >= 0 && X + 1 < sideLength) {
+				totalScore += board[X + 1][Y].traverse(currentNode, traversalID, wordLengthSoFar + 1);
+			}
+			// Letter left
+			if (X - 1 >= 0 && X - 1 < sideLength) {
+				totalScore += board[X - 1][Y].traverse(currentNode, traversalID, wordLengthSoFar + 1);
+			}
+			// Letter up-left
+			if (X - 1 >= 0 && X - 1 < sideLength && Y - 1 >= 0 && Y - 1 < sideLength) {
+				totalScore += board[X - 1][Y - 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
+			}
+			// Letter up-right
+			if (X + 1 >= 0 && X + 1 < sideLength && Y - 1 >= 0 && Y - 1 < sideLength) {
+				totalScore += board[X + 1][Y - 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
+			}
+			// Letter down-left
+			if (X - 1 >= 0 && X - 1 < sideLength && Y + 1 >= 0 && Y + 1 < sideLength) {
+				totalScore += board[X - 1][Y + 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
+			}
+			// Letter down-right
+			if (X + 1 >= 0 && X + 1 < sideLength && Y + 1 >= 0 && Y + 1 < sideLength) {
+				totalScore += board[X + 1][Y + 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
+			}
+			// Now that the traversal has finished, it's OK for other traversals to use these letters
+			hasBeenHit = false;
+			
+			return totalScore;
+		}
 	}
 }

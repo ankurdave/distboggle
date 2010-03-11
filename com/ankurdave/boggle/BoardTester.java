@@ -1,18 +1,21 @@
 package com.ankurdave.boggle;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+
 public class BoardTester {
 	static char[][] grid;
 	static String gridImage = "";
 	static Scanner in = new Scanner(System.in);
 	static int SIDE_LENGTH;
 	static Scanner tempIn;
+	
 	public static void main(String[] args) {
 		// need at least 1 argument
 		if (args.length < 1) {
 			System.out
-			        .println("Usage: java BoggleTester dictionaryPath [sideLength [gridPath]]");
+					.println("Usage: java BoggleTester dictionaryPath [sideLength [gridPath]]");
 			System.exit(-1);
 		}
 		// first argument: path of dictionary file
@@ -32,12 +35,11 @@ public class BoardTester {
 			if (args[2].equals("-")) {
 				tempIn = new Scanner(System.in);
 				System.out.println("Enter a " + SIDE_LENGTH + "x" + SIDE_LENGTH
-				        + " Boggle board:");
+						+ " Boggle board:");
 			} else {
 				try {
 					tempIn = new Scanner(new File(args[2]));
-				}
-				catch (FileNotFoundException e) {
+				} catch (FileNotFoundException e) {
 					System.out.println("File " + path + " not found!");
 					System.exit(-1);
 				}
@@ -65,15 +67,18 @@ public class BoardTester {
 			// show the user the grid
 			System.out.println(gridImage);
 		}
-		// make the Boggle board from the above information
-		Board board = new Board(grid, path);
-		board.generate();
-
-		String[] words = board.getWordsSorted();
 		
-		for (String word : words) {
-			System.out.println(word);
-		}
+		// make the Boggle board from the above information
+		Dictionary dict = new Dictionary();
+		dict.buildDictionary(path);
+		Board board = new Board(grid, dict);
+		board.generate();
+		
+		// String[] words = board.getWordsSorted();
+		//		
+		// for (String word : words) {
+		// System.out.println(word);
+		// }
 		
 		System.out.println(board);
 	}
