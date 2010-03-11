@@ -6,32 +6,38 @@ DistBoggle is a tool to search for the highest-scoring Boggle board using distri
 
 Source
 ======
-You can get the source of DistBoggle from Subversion. Run:
-	svn co http://ankurdave.com/svn/ankur/programming/distboggle
-to get the source. You don't need a username or password to download the source.
+You can get the source of DistBoggle from Mercurial. Run:
+	hg clone http://ankurdave.com/hg/distboggle
 
 Compiling
 =========
 In the root of the project (.../distboggle/), run:
-	javac com/ankurdave/boggle/*.java
+	make
+
+The class files will be generated in bin/.
 
 Running
 =======
 DistBoggle uses a client-server architecture. To start the server, run
-	java com.ankurdave.boggle.ServerTester
-and the server will listen on port 4444.
+	java com.ankurdave.boggle.ServerTester [SERVER_PORT [DICT_PATH]]
 
 There are multiple kinds of clients. The main one uses genetic algorithms; to start it, run
-	java com.ankurdave.boggle.GeneticClientTester
-and the client will try to connect to a server at 192.168.1.123:4444. To change this, edit GeneticClientTester.java and recompile.
+	java com.ankurdave.boggle.GeneticClientTester [SERVER_IP [SERVER_PORT [DICT_PATH]]]
 
 There is also a hill-climbing client; to start it, run
-	java com.ankurdave.boggle.HillClimbClient
-and the client will try to connect to a server at 192.168.1.123:4444. To change this, edit HillClimbClient.java and recompile.
+	java com.ankurdave.boggle.HillClimbClient [SERVER_IP [SERVER_PORT [DICT_PATH]]]
 
-Finally, to simply calculate the score of a board, run
-	java com.ankurdave.boggle.BoardTester words.txt 4 -
-and enter the board, one line at a time, pressing Enter after each line.
+To simply calculate the score of a board, run
+	java com.ankurdave.boggle.BoardTester [GRID_PATH [SIDE_LENGTH [DICT_PATH]]]
+
+Here are the defaults for these options:
+SERVER_IP: 192.168.1.123
+SERVER_PORT: 4444
+DICT_PATH: words.txt
+GRID_PATH: (empty)
+SIDE_LENGTH: 4
+
+When GRID_PATH is empty, a random board is generated. When it is "-" (a single hyphen), it is read from stdin. Rows should be separated by newlines.
 
 Statistics
 ==========
