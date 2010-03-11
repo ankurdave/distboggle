@@ -8,7 +8,7 @@ import java.util.Random;
  */
 public class Board implements Comparable<Board> {
 	private Letter[][] board;
-	private Dictionary dict;
+	protected Dictionary dict;
 	private int sideLength;
 	private int score;
 	private boolean scoreHasBeenCalculated = false;
@@ -93,10 +93,10 @@ public class Board implements Comparable<Board> {
 		// Traverse the possible words recursively, starting with each Letter, and accumulate the score
 		int score = 0;
 		Random rand = new Random();
-		int randID = rand.nextInt();
+		int traversalID = rand.nextInt();
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
-				score += board[i][j].traverse(dict.getRoot(), randID, 0);
+				score += board[i][j].traverse(traversalID); // TODO: breaks if traversalID is 0
 			}
 		}
 		this.score = score;
@@ -128,6 +128,17 @@ public class Board implements Comparable<Board> {
 		return score;
 	}
 	
+	public int getSideLength() {
+		return sideLength;
+	}
+	
+	/**
+	 * Retrieves the character in the board at the given grid coordinates.
+	 */
+	public char getCharAt(int x, int y) {
+		return board[x][y].getData();
+	}
+	
 	/**
 	 * Converts the array of Letters in this Board into a string like "ABCDEFGHIJKLMNOP".
 	 */
@@ -144,13 +155,6 @@ public class Board implements Comparable<Board> {
 	@Override
 	public String toString() {
 		return gridToString() + " " + getScore();
-	}
-	
-	/**
-	 * Generates a random lowercase letter from a to z.
-	 */
-	public static char randomLetter() {
-		return (char) (Math.random() * (90 - 65 + 1) + 65);
 	}
 	
 	protected class Letter {
@@ -172,11 +176,20 @@ public class Board implements Comparable<Board> {
 		/**
 		 * Finds the score resulting from a recursive traversal of the board, starting with this Letter.
 		 * 
+		 * @param traversalID an integer unique to this set of traversal calls (allows trie annotation)
+		 */
+		public int traverse(int traversalID) {
+			return traverse(dict.getRoot(), traversalID, 1);
+		}
+		
+		/**
+		 * Finds the score resulting from a recursive traversal of the board, starting with this Letter.
+		 * 
 		 * @param parentNode the dictionary letter node associated with the parent of this Letter (allows dictionary lookup)
 		 * @param traversalID an integer unique to this set of traversal calls (allows trie annotation)
 		 * @param wordLengthSoFar the current traversal depth (allows score calculation)
 		 */
-		public int traverse(TrieNode parentNode, int traversalID, int wordLengthSoFar) {
+		private int traverse(TrieNode parentNode, int traversalID, int wordLengthSoFar) {
 			// If this Letter has already been used in the current traversal, don't reuse it
 			if (hasBeenHit) {
 				return 0;

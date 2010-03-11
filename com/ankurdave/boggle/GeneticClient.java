@@ -1,4 +1,5 @@
 package com.ankurdave.boggle;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -6,41 +7,42 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 public class GeneticClient {
 	private BufferedReader in;
 	private PrintWriter out;
 	private String serverAddress;
 	private int serverPort;
 	private static final Pattern pair = Pattern
-	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
+			.compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
 	private GeneticClientThread worker;
-	private Board highest;
-	private Board outboundMigrant;
+	private GeneticBoard highest;
+	private GeneticBoard outboundMigrant;
 	private Boolean highestChanged = true, migrantChanged = true;
 	private Socket socket;
+	
 	public GeneticClient(String serverAddress, int serverPort, String dictPath,
-	        int sideLength, int startingPopulation, int childrenPerCouple,
-	        int popCap) {
+			int sideLength, int startingPopulation, int childrenPerCouple,
+			int popCap) {
 		this.serverAddress = serverAddress;
 		this.serverPort = serverPort;
 		worker = new GeneticClientThread(dictPath, sideLength,
-		        startingPopulation, childrenPerCouple, popCap, this);
+				startingPopulation, childrenPerCouple, popCap, this);
 		connect();
 	}
+	
 	public void connect() {
 		while (true) {
 			try {
 				socket = new Socket(serverAddress, serverPort);
 				out = new PrintWriter(socket.getOutputStream(), true);
 				in = new BufferedReader(new InputStreamReader(socket
-				        .getInputStream()));
-			}
-			catch (IOException e) {
+						.getInputStream()));
+			} catch (IOException e) {
 				System.err.println("Couldn't connect to server: " + e);
 				try {
 					Thread.sleep(2000);
-				}
-				catch (InterruptedException ex) {
+				} catch (InterruptedException ex) {
 					break;
 				}
 				continue; // retry if failure
@@ -48,6 +50,7 @@ public class GeneticClient {
 			break; // terminate if success
 		}
 	}
+	
 	public void run() {
 		worker.start();
 		try {
@@ -58,30 +61,29 @@ public class GeneticClient {
 				}
 				readServerInput();
 			}
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			System.err.println(e);
-		}
-		finally {
+		} finally {
 			worker.terminate();
 			out.close();
 			try {
 				in.close();
-			}
-			catch (IOException e) {}
+			} catch (IOException e) {}
 			try {
 				socket.close();
-			}
-			catch (IOException e) {}
+			} catch (IOException e) {}
 		}
 	}
-	public void setHighest(Board b) {
+	
+	public void setHighest(GeneticBoard b) {
 		if (highest == null || b.getScore() > highest.getScore()) {
 			highest = b;
 		}
 		highestChanged = true;
 	}
-	public void setOutboundMigrant(Board b) {}
+	
+	public void setOutboundMigrant(GeneticBoard b) {}
+	
 	// TODO send server the score
 	private void giveServerOutput() {
 		if (highestChanged && highest != null) {
@@ -96,6 +98,7 @@ public class GeneticClient {
 		out.println();
 		out.flush();
 	}
+	
 	private void readServerInput() throws IOException {
 		String line;
 		Matcher m;
@@ -120,10 +123,11 @@ public class GeneticClient {
 			}
 		}
 	}
+	
 	private void storeServerData(String name, String value) {
 		if (name.equalsIgnoreCase("migrant")) {
-			Board migrant = new Board(value, worker.getSideLength(), worker
-			        .getDictionary());
+			GeneticBoard migrant = new GeneticBoard(value, worker.getSideLength(), worker
+					.getDictionary());
 			worker.setInboundMigrant(migrant);
 		} else if (name.equalsIgnoreCase("pop-cap")) {
 			worker.setPopCap(Integer.parseInt(value));

@@ -1,16 +1,19 @@
 package com.ankurdave.boggle;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+
 public class Population {
 	private int childrenPerCouple;
-	private ArrayList<Board> currentGeneration;
+	private ArrayList<GeneticBoard> currentGeneration;
 	private Dictionary dict;
 	private int generation;
 	private int popCap;
 	private int sideLength;
+	
 	public Population(int sideLength, int startingPopulation,
-	        int childrenPerCouple, int popCap, Dictionary dict) {
+			int childrenPerCouple, int popCap, Dictionary dict) {
 		assert sideLength > 0;
 		assert startingPopulation >= 0;
 		assert childrenPerCouple >= 0;
@@ -23,43 +26,51 @@ public class Population {
 		this.dict = dict;
 		// make the first generation
 		generation = 1;
-		currentGeneration = new ArrayList<Board>();
-		Board temp;
+		currentGeneration = new ArrayList<GeneticBoard>();
+		GeneticBoard temp;
 		for (int i = 0; i < startingPopulation; i++) {
-			temp = new Board(Util.randomGrid(sideLength), dict);
+			temp = new GeneticBoard(Util.randomGrid(sideLength), dict);
 			temp.generate();
 			currentGeneration.add(temp);
 		}
 	}
-	public void add(Board boggle) {
+	
+	public void add(GeneticBoard boggle) {
 		assert boggle != null;
 		currentGeneration.add(boggle);
 	}
+	
 	public void add(char[][] grid) {
 		assert grid.length == sideLength;
-		currentGeneration.add(new Board(grid, dict));
+		currentGeneration.add(new GeneticBoard(grid, dict));
 	}
+	
 	public int averageScore() throws GenerationEmptyException {
-		if (numBoggles() <= 0) { throw new GenerationEmptyException(
-		        "not enough Boggles in current generation to find average"); }
+		if (numBoggles() <= 0) {
+			throw new GenerationEmptyException(
+					"not enough Boggles in current generation to find average");
+		}
 		int counter = 0;
 		int total = 0;
-		for (Board b : currentGeneration) {
+		for (GeneticBoard b : currentGeneration) {
 			counter++;
 			total += b.getScore();
 		}
 		return total / counter;
 	}
-	public void evolve() throws GenerationEmptyException { /*@ \label{Population.java:evolve} @*/
-		if (numBoggles() <= 1) { throw new GenerationEmptyException(
-		        "not enough Boggles in current generation to evolve"); }
+	
+	public void evolve() throws GenerationEmptyException { /* @ \label{Population.java:evolve} @ */
+		if (numBoggles() <= 1) {
+			throw new GenerationEmptyException(
+					"not enough Boggles in current generation to evolve");
+		}
 		// sort the current generation by score
 		Collections.sort(currentGeneration);
 		// make children
-		ArrayList<Board> children = new ArrayList<Board>();
-		Board parent1;
-		Board parent2;
-		Board child;
+		ArrayList<GeneticBoard> children = new ArrayList<GeneticBoard>();
+		GeneticBoard parent1;
+		GeneticBoard parent2;
+		GeneticBoard child;
 		for (int i = 0; i < this.numBoggles() - 1; i += 2) {
 			// get the next two parents
 			parent1 = currentGeneration.get(i);
@@ -73,12 +84,12 @@ public class Population {
 		// do elitist selection
 		// highest() seems to clone the object or something and so age is not
 		// preserved
-		Board highest = currentGeneration.get(currentGeneration.size() - 1);
+		GeneticBoard highest = currentGeneration.get(currentGeneration.size() - 1);
 		children.add(highest);
 		// make sure there are no duplicates /*@ \label{Population.java:unique} @*/
 		HashSet<String> uniqueGrids = new HashSet<String>();
 		for (int i = 0; i < children.size(); i++) {
-			Board b = children.get(i);
+			GeneticBoard b = children.get(i);
 			if (uniqueGrids.contains(b.gridToString())) {
 				children.remove(b);
 				continue; // skip scoring duplicate boards
@@ -100,48 +111,64 @@ public class Population {
 		// record generation change
 		generation++;
 	}
-	public ArrayList<Board> getCurrentGeneration() {
+	
+	public ArrayList<GeneticBoard> getCurrentGeneration() {
 		return currentGeneration;
 	}
+	
 	public int getGeneration() {
 		return generation;
 	}
+	
 	public int getPopCap() {
 		return popCap;
 	}
-	public Board highest() throws GenerationEmptyException {
-		if (numBoggles() <= 0) { throw new GenerationEmptyException(
-		        "not enough Boggles in current generation to find maximum"); }
+	
+	public GeneticBoard highest() throws GenerationEmptyException {
+		if (numBoggles() <= 0) {
+			throw new GenerationEmptyException(
+					"not enough Boggles in current generation to find maximum");
+		}
 		return Collections.max(currentGeneration);
 	}
-	public Board lowest() throws GenerationEmptyException {
-		if (numBoggles() <= 0) { throw new GenerationEmptyException(
-		        "not enough Boggles in current generation to find minimum"); }
+	
+	public GeneticBoard lowest() throws GenerationEmptyException {
+		if (numBoggles() <= 0) {
+			throw new GenerationEmptyException(
+					"not enough Boggles in current generation to find minimum");
+		}
 		return Collections.min(currentGeneration);
 	}
+	
 	public int numBoggles() {
 		return currentGeneration.size();
 	}
-	public Board random() {
+	
+	public GeneticBoard random() {
 		return currentGeneration.get((int) (Math.random() * numBoggles()));
 	}
-	public Board removeHighest() throws GenerationEmptyException {
-		if (numBoggles() <= 0) { throw new GenerationEmptyException(
-		        "not enough Boggles in current generation to find maximum"); }
-		Board highest = Collections.max(currentGeneration);
+	
+	public GeneticBoard removeHighest() throws GenerationEmptyException {
+		if (numBoggles() <= 0) {
+			throw new GenerationEmptyException(
+					"not enough Boggles in current generation to find maximum");
+		}
+		GeneticBoard highest = Collections.max(currentGeneration);
 		currentGeneration.remove(highest);
 		return highest;
 	}
+	
 	public void setPopCap(int popCap) {
 		this.popCap = popCap;
 	}
-	@Override public String toString() {
+	
+	@Override
+	public String toString() {
 		String s = null;
 		try {
 			s = generation + " " + highest().getScore() + " " + averageScore()
-			        + " " + lowest().getScore();
-		}
-		catch (GenerationEmptyException e) {
+					+ " " + lowest().getScore();
+		} catch (GenerationEmptyException e) {
 			System.err.println(e);
 		}
 		return s;

@@ -1,5 +1,8 @@
 package com.ankurdave.boggle;
 
+/**
+ * Tests the performance of Board and Dictionary by timing the scoring of many Boards.
+ */
 public class BoardPerformanceTester {
 	private static final int SIDE_LENGTH = 4;
 	private static final int NUM_BOARDS = 10000;

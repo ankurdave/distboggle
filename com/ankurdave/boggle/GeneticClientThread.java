@@ -1,15 +1,17 @@
 package com.ankurdave.boggle;
+
 public class GeneticClientThread extends Thread {
 	private Population bp;
 	private Dictionary dict;
 	private int sideLength, startingPopulation, startingChildrenPerCouple,
-	        startingPopCap;
+			startingPopCap;
 	private GeneticClient manager;
 	private Boolean resetRequested = false, terminateRequested = false;
-	private Board inboundMigrant;
+	private GeneticBoard inboundMigrant;
+	
 	public GeneticClientThread(String dictPath, int sideLength,
-	        int startingPopulation, int childrenPerCouple, int popCap,
-	        GeneticClient manager) {
+			int startingPopulation, int childrenPerCouple, int popCap,
+			GeneticClient manager) {
 		this.sideLength = sideLength;
 		this.startingPopulation = startingPopulation;
 		this.startingChildrenPerCouple = childrenPerCouple;
@@ -20,9 +22,11 @@ public class GeneticClientThread extends Thread {
 		dict.buildDictionary(dictPath);
 		// init population
 		bp = new Population(sideLength, this.startingPopulation,
-		        startingChildrenPerCouple, startingPopCap, dict);
+				startingChildrenPerCouple, startingPopCap, dict);
 	}
-	@Override public void run() {
+	
+	@Override
+	public void run() {
 		while (true) {
 			try {
 				if (inboundMigrant != null) {
@@ -31,14 +35,14 @@ public class GeneticClientThread extends Thread {
 				}
 				bp.evolve();
 				System.out.println(bp);
-				for (Board b : bp.getCurrentGeneration()) {
+				for (GeneticBoard b : bp.getCurrentGeneration()) {
 					System.out.println(b);
 				}
 				System.out.println();
 				if (resetRequested) {
 					System.out.println("Reset");
 					bp = new Population(sideLength, this.startingPopulation,
-					        startingChildrenPerCouple, startingPopCap, dict);
+							startingChildrenPerCouple, startingPopCap, dict);
 					inboundMigrant = null;
 					resetRequested = false;
 					continue;
@@ -49,31 +53,35 @@ public class GeneticClientThread extends Thread {
 				// communicate with manager
 				manager.setHighest(bp.highest());
 				// TODO analyze migration algorithm
-				manager.setOutboundMigrant(Util.weightedRandomFromList(bp
-				        .getCurrentGeneration()));
-			}
-			catch (GenerationEmptyException e) {
+				manager.setOutboundMigrant(Util.weightedRandomFromList(bp.getCurrentGeneration()));
+			} catch (GenerationEmptyException e) {
 				System.err.println(e);
 				break;
 			}
 		}
 	}
+	
 	public void terminate() {
 		terminateRequested = true;
 	}
+	
 	public int getSideLength() {
 		return sideLength;
 	}
+	
 	public Dictionary getDictionary() {
 		return dict;
 	}
-	public void setInboundMigrant(Board migrant) {
+	
+	public void setInboundMigrant(GeneticBoard migrant) {
 		inboundMigrant = migrant;
 	}
+	
 	// TODO analyze variable pop cap
 	public void setPopCap(int popCap) {
 		bp.setPopCap(popCap);
 	}
+	
 	public void reset() {
 		resetRequested = true;
 	}

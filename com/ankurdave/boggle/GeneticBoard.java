@@ -5,7 +5,6 @@ package com.ankurdave.boggle;
 
 /**
  * Board with modifications that allow it to evolve.
- * 
  */
 public class GeneticBoard extends Board {
 	private int age = 1;
@@ -46,11 +45,11 @@ public class GeneticBoard extends Board {
 	 * @return the child board
 	 */
 	public GeneticBoard merge(GeneticBoard that) { /* @ \label{Board.java:merge} @ */
-		if (this.sideLength != that.sideLength) {
+		if (this.getSideLength() != that.getSideLength()) {
 			return null;
 		}
 		// init child
-		char[][] childGrid = new char[sideLength][sideLength];
+		char[][] childGrid = new char[getSideLength()][getSideLength()];
 		// determine which one is higher or lower
 		Board higher;
 		Board lower;
@@ -76,15 +75,15 @@ public class GeneticBoard extends Board {
 		}
 		// check if the parents are too similar /*@ \label{Board.java:incest} @*/
 		int sameLetters = 0;
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
-				if (higher.grid[i][j] == lower.grid[i][j]) {
+		for (int i = 0; i < getSideLength(); i++) {
+			for (int j = 0; j < getSideLength(); j++) {
+				if (higher.getCharAt(i, j) == lower.getCharAt(i, j)) {
 					sameLetters++;
 				}
 			}
 		}
 		// if they are, mark it as incestuous
-		boolean incest = (float) sameLetters / (sideLength * sideLength) >= 0.85;
+		boolean incest = (float) sameLetters / (getSideLength() * getSideLength()) >= 0.85;
 		double higherChance = 6.6, lowerChance = 3.3;
 		if (incest) {
 			higherChance = 6;
@@ -92,25 +91,24 @@ public class GeneticBoard extends Board {
 		}
 		// construct the child grid
 		double temp;
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
+		for (int i = 0; i < getSideLength(); i++) {
+			for (int j = 0; j < getSideLength(); j++) {
 				temp = Math.random() * 10; // 0-9.9
 				// higher
 				if (temp >= 0 && temp < higherChance) {
-					childGrid[i][j] = higher.grid[i][j];
+					childGrid[i][j] = higher.getCharAt(i, j);
 				} else if (temp >= higherChance
 						&& temp < (higherChance + lowerChance)) {
 					// 6-9
-					childGrid[i][j] = lower.grid[i][j];
+					childGrid[i][j] = lower.getCharAt(i, j);
 				} else {
 					// 9.9-10 or 9-10
-					childGrid[i][j] = randomLetter();
+					childGrid[i][j] = Util.randomLetter();
 				}
 			}
 		}
 		// make the child board
-		Board child = new Board(childGrid, dict);
+		GeneticBoard child = new GeneticBoard(childGrid, dict);
 		return child;
 	}
-	
 }
