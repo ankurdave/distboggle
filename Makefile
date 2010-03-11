@@ -26,9 +26,13 @@ OBJECT_DIR=bin
 
 OBJECT_FILES=$(addprefix $(OBJECT_DIR)/,$(patsubst %.java,%.class,$(SOURCE_FILES)))
 
+PACKAGE=distboggle.zip
+
+PACKAGE_FILES=LICENSE.txt README.txt words.txt
+
 .PHONY: all clean
 
-all: $(OBJECT_FILES)
+all: $(OBJECT_FILES) $(PACKAGE)
 
 $(OBJECT_DIR):
 	mkdir -p $@
@@ -36,5 +40,11 @@ $(OBJECT_DIR):
 $(OBJECT_DIR)/%.class: %.java $(OBJECT_DIR)
 	javac $< -d $(OBJECT_DIR)
 
+$(addprefix $(OBJECT_DIR)/,$(PACKAGE_FILES)): $(OBJECT_DIR)/%: %
+	cp $< $@
+
 clean:
 	rm -r $(OBJECT_DIR)
+
+$(PACKAGE): $(OBJECT_DIR) $(OBJECT_FILES) $(addprefix $(OBJECT_DIR)/,$(PACKAGE_FILES))
+	cd $(OBJECT_DIR); zip -r $@ .; mv $@ ..
