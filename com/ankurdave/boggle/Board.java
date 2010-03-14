@@ -108,6 +108,8 @@ public class Board implements Comparable<Board> {
 			}
 		}
 		this.score = score;
+		
+		scoreHasBeenCalculated = true;
 	}
 	
 	/**
