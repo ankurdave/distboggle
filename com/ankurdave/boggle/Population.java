@@ -92,8 +92,6 @@ public class Population {
 		synchronized (incomingBoards) {
 			incomingBoards.add(board);
 		}
-		
-		System.err.println("Immigrant: " + board);
 	}
 	
 	public ArrayList<GeneticBoard> getCurrentGeneration() {
