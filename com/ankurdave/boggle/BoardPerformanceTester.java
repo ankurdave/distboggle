@@ -33,7 +33,8 @@ public class BoardPerformanceTester {
 					grid[i][j] = (char) (Math.random() * (90 - 65 + 1) + 65);
 				}
 			}
-			board = new Board(grid, dict);
+			board = new Board(grid);
+			board.setDictionary(dict);
 			
 			board.generate();
 			

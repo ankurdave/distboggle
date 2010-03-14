@@ -1,4 +1,5 @@
 package com.ankurdave.boggle;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -6,116 +7,102 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+
 /**
- * Thread started by BoggleServer to handle BoggleClients.
- * @author ankur
+ * Communicates with a single client. Performs inter-client communications by routing data through Server.
  */
-public class ServerThread extends Thread implements Comparable<ServerThread> {
-	private static final Pattern pair = Pattern
-	        .compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
+public class ServerThread extends Thread {
+	private static final Pattern pair = Pattern.compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
 	private int clientID;
-	private BufferedReader in;
-	private Board migrant;
-	private PrintWriter out;
-	private int score;
 	private Server server;
-	/**
-     * The socket used to communicate with the client.
-     */
 	private Socket socket;
-	public ServerThread(Server server, Socket socket, int clientID) {
+	private PrintWriter out;
+	
+	public ServerThread(Socket socket, Server server, int clientID) throws IOException {
 		super("BoggleServerThread");
 		this.server = server;
 		this.socket = socket;
 		this.clientID = clientID;
+		
+		this.out = new PrintWriter(socket.getOutputStream(), true);
 	}
-	public int compareTo(ServerThread that) {
-		return that.getScore() - this.getScore(); // descending order by
-		// default
-	}
-	public Board getMigrant() {
-		return migrant;
-	}
-	public int getScore() {
-		return score;
-	}
-	public void reset() {
-		out.println("Reset: yes");
-		// end the transmission
-		out.println();
-		out.flush();
-		score = 0;
-		migrant = null;
-	}
-	@Override public void run() {
+	
+	/**
+	 * Communicates with the client in a loop, listening to it and then replying. Never returns.
+	 */
+	@Override
+	public void run() {
+		BufferedReader in = null;
 		try {
-			// init the IO facilities for the socket
-			out = new PrintWriter(socket.getOutputStream(), true);
-			in = new BufferedReader(new InputStreamReader(socket
-			        .getInputStream()));
+			// Initialize the IO facilities for the socket
+			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			
+			// Continuously read the client's input
 			while (true) {
-				readClientInput();
-				giveClientOutput();
+				readClientInputLine(in);
 			}
-		}
-		catch (IOException e) {
-			System.err.println(e);
-		}
-		finally {
+		} catch (IOException e) {
+			System.err.println("Error while reading from client " + clientID + ": " + e);
+		} finally {
+			// Sever the ties with Server so it can't ask for any more actions
 			server.removeThread(this);
-			out.close();
+			
+			// Close all connections to the client
 			try {
-				in.close();
-			}
-			catch (IOException e) {}
-			try {
+				if (out != null) {
+					out.close();
+				}
+				if (in != null) {
+					in.close();
+				}
 				socket.close();
-			}
-			catch (IOException e) {}
+			} catch (IOException e) {}
 		}
 	}
-	public void setMigrant(Board migrant) {
-		this.migrant = migrant;
+	
+	/**
+	 * Adds an immigrating Board for the client to take.
+	 */
+	public void sendImmigrant(Board immigrant) {
+		sendFieldToClient("Immigrant", immigrant);
 	}
-	private void giveClientOutput() {
-		// give the migrant if there is one
-		if (migrant != null) {
-			out.println("Migrant: " + migrant);
-			migrant = null;
+	
+	/**
+	 * Reads and acts on the next line of data that the client has sent, using the given Reader. Blocks until a transmission is received.
+	 */
+	private void readClientInputLine(BufferedReader in) throws IOException {
+		// Read the line
+		String line = in.readLine();
+		if (line == null) {
+			throw new IOException("Client closed connection");
 		}
-		// give the new pop cap
-		out.println("Pop-Cap: " + server.getPopCapForClient(clientID));
-		// end the transmission
-		out.println();
+		
+		// Act upon the data
+		Matcher m = pair.matcher(line);
+		if (m.matches()) {
+			processClientData(m.group(1), m.group(2));
+		}
+	}
+	
+	/**
+	 * Processes the given field sent by the client and performs the appropriate action.
+	 */
+	private void processClientData(String name, String value) {
+		if (name.equalsIgnoreCase("migrant")) {
+			Board migrant = new Board(value);
+			server.migrate(migrant);
+		} else if (name.equalsIgnoreCase("potentialHighest")) {
+			Board b = new Board(value);
+			server.considerHighest(b);
+		}
+	}
+	
+	/**
+	 * Sends the given field to the client, with the value returned by value.toString(). Newlines in the field or the value will cause it to break.
+	 */
+	private synchronized void sendFieldToClient(String fieldName, Object value) {
+		out.println(fieldName + ":" + value);
 		out.flush();
-	}
-	private void readClientInput() throws IOException {
-		String line;
-		Matcher m;
-		while (true) {
-			// for each line in the input
-			line = in.readLine();
-			if (line == null) {
-				throw new IOException("Client closed connection");
-			} else if (line.isEmpty()) {
-				break;
-			}
-			// try to find data in it
-			m = pair.matcher(line);
-			if (m.matches()) {
-				storeClientData(m.group(1), m.group(2));
-			}
-		}
-	}
-	private void storeClientData(String name, String value) {
-		if (name.equalsIgnoreCase("score")) {
-			score = Integer.parseInt(value);
-		} else if (name.equalsIgnoreCase("migrant")) {
-			Board migrant = new Board(value, 4, server.getDictionary());
-			server.addMigrant(migrant, this);
-		} else if (name.equalsIgnoreCase("highest")) {
-			Board highest = new Board(value, 4, server.getDictionary());
-			server.setHighest(highest);
-		}
 	}
 }

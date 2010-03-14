@@ -7,8 +7,9 @@ public class HillClimber {
 		for (int trialNum = 0; trialNum < 100; trialNum++) {
 			// create the starting Boggle
 			char[][] start = Util.randomGrid(4);
-			MutatingBoard current = new MutatingBoard(start, dict);
-			current.generate(); // find score of current Boggle
+			MutatingBoard current = new MutatingBoard(start);
+			current.setDictionary(dict);
+			current.generate();
 			MutatingBoard trial;
 			// start the timer
 			long startTime = System.currentTimeMillis();

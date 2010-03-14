@@ -15,7 +15,7 @@ public class Dictionary {
 	}
 	
 	/**
-	 * Adds the given word to the dictionary.
+	 * Adds the given word to the {@link Dictionary}.
 	 */
 	public void add(String word) {
 		root.addWord(word, 0);
@@ -41,8 +41,7 @@ public class Dictionary {
 	}
 	
 	/**
-	 * Gets the root node. Useful for traversing the dictionary in parallel
-	 * with some other traversal.
+	 * Gets the root node. Useful for traversing the dictionary in parallel with some other traversal.
 	 */
 	public TrieNode getRoot() {
 		return root;

@@ -3,53 +3,136 @@ package com.ankurdave.boggle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Vector;
 
+/**
+ * Represents a population of {@link Board}s in the context of a genetic algorithm.
+ */
 public class Population {
-	private int childrenPerCouple;
-	private ArrayList<GeneticBoard> currentGeneration;
+	private Vector<GeneticBoard> currentGeneration;
 	private Dictionary dict;
-	private int generation;
-	private int popCap;
-	private int sideLength;
+	private int generation = 0;
+	private int popCap = 20;
+	private int sideLength = 4;
+	private int startingPopulation = 20;
+	private int childrenPerCouple = 5;
+	private ArrayList<GeneticBoard> incomingBoards = new ArrayList<GeneticBoard>();
 	
-	public Population(int sideLength, int startingPopulation,
-			int childrenPerCouple, int popCap, Dictionary dict) {
-		assert sideLength > 0;
-		assert startingPopulation >= 0;
-		assert childrenPerCouple >= 0;
-		assert popCap >= startingPopulation;
-		assert dict != null;
-		// copy params to object fields
-		this.sideLength = sideLength;
-		this.childrenPerCouple = childrenPerCouple;
-		this.popCap = popCap;
+	public Population() {}
+	
+	public void evolve() throws GenerationEmptyException { /* @ \label{Population.java:evolve} @ */
+		if (generation == 0) {
+			makeFirstGeneration();
+		}
+		
+		if (currentGeneration.size() <= 1) {
+			throw new GenerationEmptyException("Current generation size " + currentGeneration.size() + " too small to evolve");
+		}
+		
+		// Record the new generation
+		generation++;
+		
+		// Add the incoming boards to the current generation
+		// Don't allow Population#add(GeneticBoard) to add more boards at the same time
+		synchronized (incomingBoards) {
+			currentGeneration.addAll(incomingBoards);
+			incomingBoards.clear();
+		}
+		
+		// Pair up the boards by score and make children
+		Collections.sort(currentGeneration);
+		ArrayList<GeneticBoard> children = new ArrayList<GeneticBoard>();
+		GeneticBoard parent1;
+		GeneticBoard parent2;
+		GeneticBoard child;
+		for (int i = 0; i < currentGeneration.size() - 1; i += 2) {
+			// Get the next two parents
+			parent1 = currentGeneration.get(i);
+			parent2 = currentGeneration.get(i + 1);
+			
+			// Mate them childrenPerCouple times
+			for (int j = 0; j < childrenPerCouple; j++) {
+				child = parent1.merge(parent2);
+				child.generate();
+				children.add(child);
+			}
+		}
+		
+		// Do elitist selection -- preserve the highest-scoring Board into the next generation
+		GeneticBoard highest = currentGeneration.get(currentGeneration.size() - 1);
+		highest.incrementAge();
+		children.add(highest);
+		
+		// Copy the unique children into childrenUnique /*@ \label{Population.java:unique} @*/
+		HashSet<String> uniqueGridStrings = new HashSet<String>();
+		ArrayList<GeneticBoard> childrenUnique = new ArrayList<GeneticBoard>();
+		for (GeneticBoard b : children) {
+			if (!uniqueGridStrings.contains(b.gridToString())) {
+				childrenUnique.add(b);
+				uniqueGridStrings.add(b.gridToString());
+			}
+		}
+		
+		// If the list is too big, truncate it, keeping only the top popCap Boards
+		Collections.sort(childrenUnique);
+		if (childrenUnique.size() > popCap) {
+			childrenUnique.subList(0, childrenUnique.size() - popCap).clear();
+		}
+		
+		currentGeneration.clear();
+		currentGeneration.addAll(childrenUnique);
+	}
+	
+	public void add(GeneticBoard board) {
+		// Make sure the Board uses the standard dictionary, so that when GeneticBoard#merge(GeneticBoard) gets called, it sets the right dictionary
+		board.setDictionary(dict);
+		
+		// Add it to the queue
+		// Don't allow Population#evolve() to remove the boards at the same time
+		synchronized (incomingBoards) {
+			incomingBoards.add(board);
+		}
+		
+		System.err.println("Immigrant: " + board);
+	}
+	
+	public Vector<GeneticBoard> getCurrentGeneration() {
+		return currentGeneration;
+	}
+	
+	public void setDictionary(Dictionary dict) {
 		this.dict = dict;
-		// make the first generation
-		generation = 1;
-		currentGeneration = new ArrayList<GeneticBoard>();
+	}
+	
+	public void setSideLength(int sideLength) {
+		this.sideLength = sideLength;
+	}
+	
+	public void setStartingPopulation(int startingPopulation) {
+		this.startingPopulation = startingPopulation;
+	}
+	
+	public void setChildrenPerCouple(int childrenPerCouple) {
+		this.childrenPerCouple = childrenPerCouple;
+	}
+	
+	public void setPopCap(int popCap) {
+		this.popCap = popCap;
+	}
+	
+	private void makeFirstGeneration() {
+		generation = 0;
+		currentGeneration = new Vector<GeneticBoard>(startingPopulation);
 		GeneticBoard temp;
 		for (int i = 0; i < startingPopulation; i++) {
-			temp = new GeneticBoard(Util.randomGrid(sideLength), dict);
+			temp = new GeneticBoard(Util.randomGrid(sideLength));
+			temp.setDictionary(dict);
 			temp.generate();
 			currentGeneration.add(temp);
 		}
 	}
 	
-	public void add(GeneticBoard boggle) {
-		assert boggle != null;
-		currentGeneration.add(boggle);
-	}
-	
-	public void add(char[][] grid) {
-		assert grid.length == sideLength;
-		currentGeneration.add(new GeneticBoard(grid, dict));
-	}
-	
-	public int averageScore() throws GenerationEmptyException {
-		if (numBoggles() <= 0) {
-			throw new GenerationEmptyException(
-					"not enough Boggles in current generation to find average");
-		}
+	private int getAverageScore() {
 		int counter = 0;
 		int total = 0;
 		for (GeneticBoard b : currentGeneration) {
@@ -59,118 +142,18 @@ public class Population {
 		return total / counter;
 	}
 	
-	public void evolve() throws GenerationEmptyException { /* @ \label{Population.java:evolve} @ */
-		if (numBoggles() <= 1) {
-			throw new GenerationEmptyException(
-					"not enough Boggles in current generation to evolve");
-		}
-		// sort the current generation by score
+	private GeneticBoard getHighestBoard() {
 		Collections.sort(currentGeneration);
-		// make children
-		ArrayList<GeneticBoard> children = new ArrayList<GeneticBoard>();
-		GeneticBoard parent1;
-		GeneticBoard parent2;
-		GeneticBoard child;
-		for (int i = 0; i < this.numBoggles() - 1; i += 2) {
-			// get the next two parents
-			parent1 = currentGeneration.get(i);
-			parent2 = currentGeneration.get(i + 1);
-			// mate them childrenPerCouple times
-			for (int j = 0; j < childrenPerCouple; j++) {
-				child = parent1.merge(parent2);
-				children.add(child);
-			}
-		}
-		// do elitist selection
-		// highest() seems to clone the object or something and so age is not
-		// preserved
-		GeneticBoard highest = currentGeneration.get(currentGeneration.size() - 1);
-		children.add(highest);
-		// make sure there are no duplicates /*@ \label{Population.java:unique} @*/
-		HashSet<String> uniqueGrids = new HashSet<String>();
-		for (int i = 0; i < children.size(); i++) {
-			GeneticBoard b = children.get(i);
-			if (uniqueGrids.contains(b.gridToString())) {
-				children.remove(b);
-				continue; // skip scoring duplicate boards
-			} else {
-				uniqueGrids.add(b.gridToString());
-			}
-			// score each unique board
-			b.generate();
-		}
-		Collections.sort(children);
-		// make sure number of children <= popCap by removing the worst few
-		Collections.sort(children);
-		while (children.size() > popCap) {
-			children.remove(0);
-		}
-		// apply changes
-		currentGeneration.clear();
-		currentGeneration.addAll(children);
-		// record generation change
-		generation++;
+		return currentGeneration.get(currentGeneration.size() - 1);
 	}
 	
-	public ArrayList<GeneticBoard> getCurrentGeneration() {
-		return currentGeneration;
-	}
-	
-	public int getGeneration() {
-		return generation;
-	}
-	
-	public int getPopCap() {
-		return popCap;
-	}
-	
-	public GeneticBoard highest() throws GenerationEmptyException {
-		if (numBoggles() <= 0) {
-			throw new GenerationEmptyException(
-					"not enough Boggles in current generation to find maximum");
-		}
-		return Collections.max(currentGeneration);
-	}
-	
-	public GeneticBoard lowest() throws GenerationEmptyException {
-		if (numBoggles() <= 0) {
-			throw new GenerationEmptyException(
-					"not enough Boggles in current generation to find minimum");
-		}
-		return Collections.min(currentGeneration);
-	}
-	
-	public int numBoggles() {
-		return currentGeneration.size();
-	}
-	
-	public GeneticBoard random() {
-		return currentGeneration.get((int) (Math.random() * numBoggles()));
-	}
-	
-	public GeneticBoard removeHighest() throws GenerationEmptyException {
-		if (numBoggles() <= 0) {
-			throw new GenerationEmptyException(
-					"not enough Boggles in current generation to find maximum");
-		}
-		GeneticBoard highest = Collections.max(currentGeneration);
-		currentGeneration.remove(highest);
-		return highest;
-	}
-	
-	public void setPopCap(int popCap) {
-		this.popCap = popCap;
+	private GeneticBoard getLowestBoard() {
+		Collections.sort(currentGeneration);
+		return currentGeneration.get(0);
 	}
 	
 	@Override
 	public String toString() {
-		String s = null;
-		try {
-			s = generation + " " + highest().getScore() + " " + averageScore()
-					+ " " + lowest().getScore();
-		} catch (GenerationEmptyException e) {
-			System.err.println(e);
-		}
-		return s;
+		return generation + " " + getHighestBoard().getScore() + " " + getAverageScore() + " " + getLowestBoard().getScore();
 	}
 }

@@ -8,42 +8,51 @@ import java.util.Random;
  */
 public class Board implements Comparable<Board> {
 	private Letter[][] board;
-	protected Dictionary dict;
-	private int sideLength;
 	private int score;
 	private boolean scoreHasBeenCalculated = false;
+	private Dictionary dict;
 	
 	/**
-	 * Creates a Board from a square array of characters.
+	 * Creates a {@link Board} from a square array of characters.
 	 */
-	public Board(char[][] grid, Dictionary dict) {
-		assert grid.length == grid[0].length;
-		assert grid.length > 0;
-		assert dict != null;
-		
-		this.sideLength = grid.length;
-		this.dict = dict;
-		this.board = makeLettersFromGrid(grid, sideLength);
+	public Board(char[][] grid) {
+		this.board = makeLettersFromGrid(grid);
 	}
 	
 	/**
-	 * Creates a Board from a string of the form "ABCDEFGHIJKLMNOP 25".
+	 * Creates a {@link Board} from a string of the form "ABCDEFGHIJKLMNOP 25". Sets the score, avoiding recalculation.
 	 */
-	public Board(String s, int sideLength, Dictionary dict) {
+	public Board(String s) {
 		String[] parts = s.split(" ", 2);
-		this.board = makeLettersFromString(parts[0], sideLength);
+		
+		this.board = makeLettersFromString(parts[0]);
 		this.score = Integer.parseInt(parts[1]);
-		this.sideLength = sideLength;
+		this.scoreHasBeenCalculated = true;
+	}
+	
+	/**
+	 * Gets the {@link Dictionary} used by this Board to generate word lists.
+	 */
+	public Dictionary getDictionary() {
+		return dict;
+	}
+	
+	/**
+	 * Sets the {@link Dictionary} for use in score calculation when calling {@link Board#generate(boolean)}.
+	 */
+	public void setDictionary(Dictionary dict) {
 		this.dict = dict;
 	}
 	
 	/**
-	 * Converts a square array of characters into a square array of Letters.
+	 * Converts a 2D array of characters into a 2D array of Letters.
 	 */
-	private Letter[][] makeLettersFromGrid(char[][] grid, int sideLength) {
-		Letter[][] letters = new Letter[sideLength][sideLength];
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
+	private Letter[][] makeLettersFromGrid(char[][] grid) {
+		int height = grid.length;
+		int width = grid[0].length;
+		Letter[][] letters = new Letter[height][width];
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
 				letters[i][j] = new Letter(grid[i][j], i, j);
 			}
 		}
@@ -51,9 +60,11 @@ public class Board implements Comparable<Board> {
 	}
 	
 	/**
-	 * Converts a string like "ABCDEFGHIJKLMNOP" into a square array of Letters.
+	 * Converts a string like "ABCDEFGHIJKLMNOP" into a square array of Letters. Note: only supports square arrays.
 	 */
-	private Letter[][] makeLettersFromString(String s, int sideLength) {
+	private Letter[][] makeLettersFromString(String s) {
+		int sideLength = (int) Math.sqrt(s.length());
+		
 		Letter[][] letters = new Letter[sideLength][sideLength];
 		for (int i = 0; i < sideLength; i++) {
 			for (int j = 0; j < sideLength; j++) {
@@ -65,15 +76,12 @@ public class Board implements Comparable<Board> {
 	}
 	
 	/**
-	 * Compares two Boards based on score.
+	 * Compares two {@link Board}s based on score.
 	 */
 	public int compareTo(Board that) {
-		this.generate();
-		that.generate();
-		
-		if (this.getScore() > that.getScore()) {
+		if (this.score > that.score) {
 			return 1;
-		} else if (this.getScore() < that.getScore()) {
+		} else if (this.score < that.score) {
 			return -1;
 		} else {
 			return 0;
@@ -81,12 +89,12 @@ public class Board implements Comparable<Board> {
 	}
 	
 	/**
-	 * Calculates the score of the Board based on how many words it contains. Caches the data, avoiding recalculation when possible.
+	 * Calculates the score of the {@link Board} based on how many words it contains. If {@code force} is false, caches the data, avoiding recalculation when possible. If {@link Board#setDictionary(Dictionary)} has not been called and a score has not already been calculated, will throw a {@link NullPointerException}.
 	 * 
 	 */
-	public void generate() { /* @ \label{Board.java:generate} @ */
-		// Don't recalculate
-		if (scoreHasBeenCalculated) {
+	public void generate(boolean force) { /* @ \label{Board.java:generate} @ */
+		// Don't recalculate unless force is set
+		if (scoreHasBeenCalculated && !force) {
 			return;
 		}
 		
@@ -94,12 +102,21 @@ public class Board implements Comparable<Board> {
 		int score = 0;
 		Random rand = new Random();
 		int traversalID = rand.nextInt();
-		for (int i = 0; i < sideLength; i++) {
-			for (int j = 0; j < sideLength; j++) {
-				score += board[i][j].traverse(traversalID); // TODO: breaks if traversalID is 0
+		for (Letter[] row : board) {
+			for (Letter letter : row) {
+				score += letter.traverse(dict.getRoot(), traversalID); // TODO: breaks if traversalID is 0
 			}
 		}
 		this.score = score;
+	}
+	
+	/**
+	 * Calculates the score without forcing a recalculation.
+	 * 
+	 * @see Board#generate(boolean)
+	 */
+	public void generate() {
+		generate(false);
 	}
 	
 	/**
@@ -122,14 +139,10 @@ public class Board implements Comparable<Board> {
 	}
 	
 	/**
-	 * Retrieves the Board's score. Make sure to call generate() first.
+	 * Retrieves the Board's score.
 	 */
 	public int getScore() {
 		return score;
-	}
-	
-	public int getSideLength() {
-		return sideLength;
 	}
 	
 	/**
@@ -140,7 +153,21 @@ public class Board implements Comparable<Board> {
 	}
 	
 	/**
-	 * Converts the array of Letters in this Board into a string like "ABCDEFGHIJKLMNOP".
+	 * Gets the Board's width.
+	 */
+	public int getWidth() {
+		return board.length;
+	}
+	
+	/**
+	 * Gets the Board's height.
+	 */
+	public int getHeight() {
+		return board[0].length;
+	}
+	
+	/**
+	 * Converts the array of Letters in this {@link Board} into a string like "ABCDEFGHIJKLMNOP".
 	 */
 	public String gridToString() {
 		StringBuilder gridString = new StringBuilder();
@@ -152,11 +179,17 @@ public class Board implements Comparable<Board> {
 		return gridString.toString();
 	}
 	
+	/**
+	 * Returns the {@link String} representation of this Board in the form "ABCDEFGHABCDEFGH 22".
+	 */
 	@Override
 	public String toString() {
-		return gridToString() + " " + getScore();
+		return gridToString() + " " + score;
 	}
 	
+	/**
+	 * Represents a letter in a Boggle board.
+	 */
 	protected class Letter {
 		private char data;
 		private boolean hasBeenHit = false;
@@ -169,23 +202,26 @@ public class Board implements Comparable<Board> {
 			this.Y = Y;
 		}
 		
+		/**
+		 * Gets the character associated with this {@link Letter}.
+		 */
 		public char getData() {
 			return data;
 		}
 		
 		/**
-		 * Finds the score resulting from a recursive traversal of the board, starting with this Letter.
+		 * Finds the score resulting from a recursive traversal of the board, starting with this {@link Letter}.
 		 * 
 		 * @param traversalID an integer unique to this set of traversal calls (allows trie annotation)
 		 */
-		public int traverse(int traversalID) {
-			return traverse(dict.getRoot(), traversalID, 1);
+		public int traverse(TrieNode rootNode, int traversalID) {
+			return traverse(rootNode, traversalID, 1);
 		}
 		
 		/**
-		 * Finds the score resulting from a recursive traversal of the board, starting with this Letter.
+		 * Finds the score resulting from a recursive traversal of the board, starting with this {@link Letter}.
 		 * 
-		 * @param parentNode the dictionary letter node associated with the parent of this Letter (allows dictionary lookup)
+		 * @param parentNode the dictionary letter node associated with the parent of this {@link Letter} (allows dictionary lookup)
 		 * @param traversalID an integer unique to this set of traversal calls (allows trie annotation)
 		 * @param wordLengthSoFar the current traversal depth (allows score calculation)
 		 */
@@ -214,41 +250,55 @@ public class Board implements Comparable<Board> {
 			// Make sure we don't traverse back onto this node during recursion
 			hasBeenHit = true;
 			// Letter above
-			if (Y - 1 >= 0 && Y - 1 < sideLength) {
+			if (yInRange(Y - 1)) {
 				totalScore += board[X][Y - 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
 			}
 			// Letter below
-			if (Y + 1 >= 0 && Y + 1 < sideLength) {
+			if (yInRange(Y + 1)) {
 				totalScore += board[X][Y + 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
 			}
 			// Letter right
-			if (X + 1 >= 0 && X + 1 < sideLength) {
+			if (xInRange(X + 1)) {
 				totalScore += board[X + 1][Y].traverse(currentNode, traversalID, wordLengthSoFar + 1);
 			}
 			// Letter left
-			if (X - 1 >= 0 && X - 1 < sideLength) {
+			if (xInRange(X - 1)) {
 				totalScore += board[X - 1][Y].traverse(currentNode, traversalID, wordLengthSoFar + 1);
 			}
 			// Letter up-left
-			if (X - 1 >= 0 && X - 1 < sideLength && Y - 1 >= 0 && Y - 1 < sideLength) {
+			if (xInRange(X - 1) && yInRange(Y - 1)) {
 				totalScore += board[X - 1][Y - 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
 			}
 			// Letter up-right
-			if (X + 1 >= 0 && X + 1 < sideLength && Y - 1 >= 0 && Y - 1 < sideLength) {
+			if (xInRange(X + 1) && yInRange(Y - 1)) {
 				totalScore += board[X + 1][Y - 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
 			}
 			// Letter down-left
-			if (X - 1 >= 0 && X - 1 < sideLength && Y + 1 >= 0 && Y + 1 < sideLength) {
+			if (xInRange(X - 1) && yInRange(Y + 1)) {
 				totalScore += board[X - 1][Y + 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
 			}
 			// Letter down-right
-			if (X + 1 >= 0 && X + 1 < sideLength && Y + 1 >= 0 && Y + 1 < sideLength) {
+			if (xInRange(X + 1) && yInRange(Y + 1)) {
 				totalScore += board[X + 1][Y + 1].traverse(currentNode, traversalID, wordLengthSoFar + 1);
 			}
 			// Now that the traversal has finished, it's OK for other traversals to use these letters
 			hasBeenHit = false;
 			
 			return totalScore;
+		}
+		
+		/**
+		 * Checks whether or not the given x coordinate is within the bounds of the board.
+		 */
+		private boolean xInRange(int x) {
+			return x > 0 && x < getWidth();
+		}
+		
+		/**
+		 * Checks whether or not the given y coordinate is within the bounds of the board.
+		 */
+		private boolean yInRange(int y) {
+			return y > 0 && y < getHeight();
 		}
 	}
 }

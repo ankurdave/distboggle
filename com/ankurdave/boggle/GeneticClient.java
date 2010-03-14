@@ -8,132 +8,140 @@ import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Uses a GeneticClientThread to do optimization using genetic algorithms, and communicates the results with Server.
+ */
 public class GeneticClient {
-	private BufferedReader in;
+	private static final Pattern pair = Pattern.compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
 	private PrintWriter out;
-	private String serverAddress;
-	private int serverPort;
-	private static final Pattern pair = Pattern
-			.compile("^\\s*([\\w-]+)\\s*:\\s*([\\w -]+)\\s*$");
 	private GeneticClientThread worker;
-	private GeneticBoard highest;
-	private GeneticBoard outboundMigrant;
-	private Boolean highestChanged = true, migrantChanged = true;
 	private Socket socket;
 	
-	public GeneticClient(String serverAddress, int serverPort, String dictPath,
-			int sideLength, int startingPopulation, int childrenPerCouple,
-			int popCap) {
-		this.serverAddress = serverAddress;
-		this.serverPort = serverPort;
-		worker = new GeneticClientThread(dictPath, sideLength,
-				startingPopulation, childrenPerCouple, popCap, this);
-		connect();
+	public GeneticClient() {
+		worker = new GeneticClientThread(this);
 	}
 	
-	public void connect() {
-		while (true) {
-			try {
-				socket = new Socket(serverAddress, serverPort);
-				out = new PrintWriter(socket.getOutputStream(), true);
-				in = new BufferedReader(new InputStreamReader(socket
-						.getInputStream()));
-			} catch (IOException e) {
-				System.err.println("Couldn't connect to server: " + e);
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException ex) {
-					break;
-				}
-				continue; // retry if failure
-			}
-			break; // terminate if success
-		}
+	/**
+	 * Attempts to open the connection to the server.
+	 */
+	public void connect(String serverAddress, int serverPort) throws IOException {
+		socket = new Socket(serverAddress, serverPort);
+		out = new PrintWriter(socket.getOutputStream(), true);
 	}
 	
+	/**
+	 * Begins the computation in a worker thread, communicating with the server as necessary. Make sure to call {@link GeneticClient#connect(String, int)} first.
+	 */
 	public void run() {
 		worker.start();
+		
+		BufferedReader in = null;
 		try {
+			// Initialize the IO facilities for the socket
+			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			
+			// Continuously read the server's input
 			while (true) {
-				// communicate with server
-				if (highestChanged || migrantChanged) {
-					giveServerOutput();
-				}
-				readServerInput();
+				readServerInputLine(in);
 			}
 		} catch (IOException e) {
-			System.err.println(e);
+			System.err.println("Error while reading from server: " + e);
 		} finally {
-			worker.terminate();
-			out.close();
+			// Kill the worker, since there's no point in doing any more calculations
+			worker.interrupt();
+			
+			// Close all connections to the server
 			try {
-				in.close();
-			} catch (IOException e) {}
-			try {
+				if (out != null) {
+					out.close();
+				}
+				if (in != null) {
+					in.close();
+				}
 				socket.close();
 			} catch (IOException e) {}
 		}
 	}
 	
-	public void setHighest(GeneticBoard b) {
-		if (highest == null || b.getScore() > highest.getScore()) {
-			highest = b;
-		}
-		highestChanged = true;
+	/**
+	 * Adds a migrating Board to be sent to another client via the server.
+	 */
+	public void migrate(Board migrant) {
+		sendFieldToServer("Migrant", migrant);
 	}
 	
-	public void setOutboundMigrant(GeneticBoard b) {}
+	public void sendPotentialHighest(Board potentialHighest) {
+		sendFieldToServer("PotentialHighest", potentialHighest);
+	}
 	
-	// TODO send server the score
-	private void giveServerOutput() {
-		if (highestChanged && highest != null) {
-			highestChanged = false;
-			out.println("Highest:" + highest);
-		}
-		if (migrantChanged && outboundMigrant != null) {
-			migrantChanged = false;
-			out.println("Migrant:" + outboundMigrant);
-		}
-		// end of transmission
-		out.println();
+	/**
+	 * Sets the {@link Dictionary} for the worker thread to use. Must be set before calling {@link GeneticClient#run()}, otherwise a {@link NullPointerException} will occur.
+	 */
+	public void setDictionary(Dictionary dict) {
+		worker.setDictionary(dict);
+	}
+	
+	/**
+	 * Sets the side length for the worker thread to use. If not called before calling {@link GeneticClient#run()}, the default value will be used. Cannot be called after this, otherwise a {@link BoardDimensionMismatchException} may occur.
+	 */
+	public void setSideLength(int sideLength) {
+		worker.setSideLength(sideLength);
+	}
+	
+	/**
+	 * Sets the number of {@link Board}s in the starting population for the worker thread to use. Will have no effect unless called before calling {@link GeneticClientThread#run()}.
+	 */
+	public void setStartingPopulation(int startingPopulation) {
+		worker.setStartingPopulation(startingPopulation);
+	}
+	
+	/**
+	 * Sets the number of children per couple for the worker thread to use. If not called before calling {@link GeneticClient#run()}, the default value will be used. Can be set at any time.
+	 */
+	public void setChildrenPerCouple(int childrenPerCouple) {
+		worker.setChildrenPerCouple(childrenPerCouple);
+	}
+	
+	/**
+	 * Sets the population cap for the worker thread to use. If not called before calling {@link GeneticClient#run()}, the default value will be used. Can be set at any time.
+	 */
+	public void setPopCap(int popCap) {
+		worker.setPopCap(popCap);
+	}
+	
+	/**
+	 * Sends the given field to the server, with the value returned by value.toString(). The field name or value must not contain any newlines.
+	 */
+	private synchronized void sendFieldToServer(String fieldName, Object value) {
+		// TODO: check for newlines and throw an exception
+		out.println(fieldName + ":" + value);
 		out.flush();
 	}
 	
-	private void readServerInput() throws IOException {
-		String line;
-		Matcher m;
-		while (true) {
-			// for each line in the input
-			line = in.readLine();
-			if (line == null) {
-				throw new IOException("Server closed connection");
-			} else if (line.isEmpty()) {
-				break;
-			}
-			// try to find data in it
-			m = pair.matcher(line);
-			if (m.matches()) {
-				storeServerData(m.group(1), m.group(2));
-				if (m.group(1).equalsIgnoreCase("reset")) {
-					// throw away the rest of the message
-					do {
-						line = in.readLine();
-					} while (!line.isEmpty());
-				}
-			}
+	/**
+	 * Processes the given field sent by the server and performs the appropriate action.
+	 */
+	private void processServerData(String name, String value) {
+		if (name.equalsIgnoreCase("immigrant")) {
+			GeneticBoard immigrant = new GeneticBoard(value);
+			worker.addBoard(immigrant);
 		}
 	}
 	
-	private void storeServerData(String name, String value) {
-		if (name.equalsIgnoreCase("migrant")) {
-			GeneticBoard migrant = new GeneticBoard(value, worker.getSideLength(), worker
-					.getDictionary());
-			worker.setInboundMigrant(migrant);
-		} else if (name.equalsIgnoreCase("pop-cap")) {
-			worker.setPopCap(Integer.parseInt(value));
-		} else if (name.equalsIgnoreCase("reset")) {
-			highest = null;
-			worker.reset();
+	/**
+	 * Reads and acts on the next line of data that the server has sent, using the given Reader. Blocks until a transmission is received.
+	 */
+	private void readServerInputLine(BufferedReader in) throws IOException {
+		// Read the line
+		String line = in.readLine();
+		if (line == null) {
+			throw new IOException("Server closed connection");
+		}
+		
+		// Act upon the data
+		Matcher m = pair.matcher(line);
+		if (m.matches()) {
+			processServerData(m.group(1), m.group(2));
 		}
 	}
 }

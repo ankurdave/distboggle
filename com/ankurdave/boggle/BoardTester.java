@@ -22,7 +22,6 @@ public class BoardTester {
 			sideLength = Integer.parseInt(args[1]);
 		}
 		
-		// Set variables from args
 		String dictionaryPath = "words.txt";
 		if (args.length >= 3) {
 			dictionaryPath = args[2];
@@ -70,7 +69,8 @@ public class BoardTester {
 		// Make the Boggle board from the above information
 		Dictionary dict = new Dictionary();
 		dict.buildDictionary(dictionaryPath);
-		Board board = new Board(grid, dict);
+		Board board = new Board(grid);
+		board.setDictionary(dict);
 		board.generate();
 		
 		// TODO: print out the list of found words

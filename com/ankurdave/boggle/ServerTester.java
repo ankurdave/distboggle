@@ -1,5 +1,7 @@
 package com.ankurdave.boggle;
 
+import java.io.IOException;
+
 public class ServerTester {
 	public static void main(String[] args) {
 		// Set variables from args
@@ -13,6 +15,20 @@ public class ServerTester {
 			dictPath = args[1];
 		}
 		
-		new Server(serverPort, dictPath).listen();
+		// Build the dictionary
+		Dictionary dict = new Dictionary();
+		dict.buildDictionary(dictPath);
+		
+		// Set up the server
+		Server s = new Server();
+		s.setMaxHighestBoards(10);
+		
+		// Start listening for clients
+		try {
+			s.listen(serverPort);
+		} catch (IOException e) {
+			System.err.println("Error while listening: " + e);
+			System.exit(1);
+		}
 	}
 }

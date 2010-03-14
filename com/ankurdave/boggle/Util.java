@@ -1,6 +1,7 @@
 package com.ankurdave.boggle;
 
-import java.util.ArrayList;
+import java.util.List;
+
 
 public class Util {
 	/**
@@ -33,7 +34,7 @@ public class Util {
 	 * successive iterations, every other Boggle gets a weighted chance at
 	 * replacing the previous Boggle.
 	 */
-	public static <T extends Board> T weightedRandomFromList(ArrayList<T> list) {
+	public static <T extends Board> T weightedRandomFromList(List<T> list) {
 		int sum = 0;
 		T result = null;
 		for (T b : list) {

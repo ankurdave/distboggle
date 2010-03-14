@@ -1,16 +1,16 @@
 package com.ankurdave.boggle;
+
 /**
- * Exception thrown when there are insufficient Boggles in the current
- * generation to evolve to the next generation.
- * @author ankur
+ * Exception thrown when there are insufficient {@link Board}s in the current generation to evolve to the next generation.
  */
+@SuppressWarnings("serial")
 public class GenerationEmptyException extends Exception {
-	public static final long serialVersionUID = 0;
-	private String message;
 	public GenerationEmptyException(String message) {
-		this.message = message;
+		super(message);
 	}
-	@Override public String toString() {
-		return "GenerationEmptyException: " + message;
+	
+	@Override
+	public String toString() {
+		return "GenerationEmptyException: " + getMessage();
 	}
 }

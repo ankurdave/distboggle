@@ -1,59 +1,62 @@
 package com.ankurdave.boggle;
 
+/**
+ * Worker thread called by {@link GeneticClient} in order to perform the heavy lifting -- the {@link Board} optimization -- using a genetic algorithm. Reports results back to {@link GeneticClient}.
+ */
 public class GeneticClientThread extends Thread {
 	private Population bp;
-	private Dictionary dict;
-	private int sideLength, startingPopulation, startingChildrenPerCouple,
-			startingPopCap;
 	private GeneticClient manager;
-	private Boolean resetRequested = false, terminateRequested = false;
-	private GeneticBoard inboundMigrant;
 	
-	public GeneticClientThread(String dictPath, int sideLength,
-			int startingPopulation, int childrenPerCouple, int popCap,
-			GeneticClient manager) {
-		this.sideLength = sideLength;
-		this.startingPopulation = startingPopulation;
-		this.startingChildrenPerCouple = childrenPerCouple;
-		this.startingPopCap = popCap;
+	
+	public GeneticClientThread(GeneticClient manager) {
 		this.manager = manager;
-		// init dictionary
-		dict = new Dictionary();
-		dict.buildDictionary(dictPath);
-		// init population
-		bp = new Population(sideLength, this.startingPopulation,
-				startingChildrenPerCouple, startingPopCap, dict);
+		bp = new Population();
+	}
+	
+	public void setDictionary(Dictionary dict) {
+		bp.setDictionary(dict);
+	}
+	
+	public void setSideLength(int sideLength) {
+		bp.setSideLength(sideLength);
+	}
+	
+	public void setStartingPopulation(int startingPopulation) {
+		bp.setStartingPopulation(startingPopulation);
+	}
+	
+	public void setChildrenPerCouple(int childrenPerCouple) {
+		bp.setChildrenPerCouple(childrenPerCouple);
+	}
+	
+	public void setPopCap(int popCap) {
+		bp.setPopCap(popCap);
 	}
 	
 	@Override
 	public void run() {
-		while (true) {
+		while (!Thread.interrupted()) {
 			try {
-				if (inboundMigrant != null) {
-					bp.add(inboundMigrant);
-					inboundMigrant = null;
-				}
+				// Evolve the population
 				bp.evolve();
+				
+				// Print debugging information
 				System.out.println(bp);
+				// for (GeneticBoard b : bp.getCurrentGeneration()) {
+				// System.err.println(b);
+				// }
+				// System.out.println();
+				
+				// Send every board as a potential highest board for consideration in the score charts
+				// TODO: do some preliminary weeding to reduce network load
 				for (GeneticBoard b : bp.getCurrentGeneration()) {
-					System.out.println(b);
+					manager.sendPotentialHighest(b);
 				}
-				System.out.println();
-				if (resetRequested) {
-					System.out.println("Reset");
-					bp = new Population(sideLength, this.startingPopulation,
-							startingChildrenPerCouple, startingPopCap, dict);
-					inboundMigrant = null;
-					resetRequested = false;
-					continue;
+				
+				// Occasionally, send a migrant (about once every 5 generations, or 20% of the time)
+				if (Math.random() > 0.20) {
+					manager.migrate(Util.weightedRandomFromList(bp.getCurrentGeneration()));
 				}
-				if (terminateRequested) {
-					break;
-				}
-				// communicate with manager
-				manager.setHighest(bp.highest());
-				// TODO analyze migration algorithm
-				manager.setOutboundMigrant(Util.weightedRandomFromList(bp.getCurrentGeneration()));
 			} catch (GenerationEmptyException e) {
 				System.err.println(e);
 				break;
@@ -61,28 +64,7 @@ public class GeneticClientThread extends Thread {
 		}
 	}
 	
-	public void terminate() {
-		terminateRequested = true;
-	}
-	
-	public int getSideLength() {
-		return sideLength;
-	}
-	
-	public Dictionary getDictionary() {
-		return dict;
-	}
-	
-	public void setInboundMigrant(GeneticBoard migrant) {
-		inboundMigrant = migrant;
-	}
-	
-	// TODO analyze variable pop cap
-	public void setPopCap(int popCap) {
-		bp.setPopCap(popCap);
-	}
-	
-	public void reset() {
-		resetRequested = true;
+	public synchronized void addBoard(GeneticBoard board) {
+		bp.add(board);
 	}
 }

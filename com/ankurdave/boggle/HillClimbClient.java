@@ -52,7 +52,8 @@ public class HillClimbClient {
 		// get boggle from server
 		out.println(""); // tell server we're ready for a migrant
 		inputLine = in.readLine();
-		MutatingBoard best = new MutatingBoard(inputLine, 4, dict);
+		MutatingBoard best = new MutatingBoard(inputLine);
+		best.setDictionary(dict);
 		best.generate();
 		System.err.println("Start boggle: " + inputLine);
 		MutatingBoard trial;
@@ -81,7 +82,8 @@ public class HillClimbClient {
 				}
 				if (!inputLine.isEmpty()) { // if the server has no migrants,
 					// keep mutating the current one
-					best = new MutatingBoard(inputLine, 4, dict);
+					best = new MutatingBoard(inputLine);
+					best.setDictionary(dict);
 					best.generate();
 					System.err.println("Got boggle: " + inputLine);
 				}

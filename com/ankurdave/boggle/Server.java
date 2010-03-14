@@ -4,111 +4,77 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
- * Server component of DistBoggle. Manages BoggleClients.
- * 
- * @author ankur
+ * Creates and coordinates ServerThreads, which each communicate with one client over the network. Provides highest-board-list and migration functionality.
  */
 public class Server {
-	private static final int DEFAULT_POP_CAP = 20;
-	private static final int POP_CAP_RANGE = 0;
+	// TODO: add a facility to store or print the highest boards
+	
 	private int curClientID = 0;
-	private Dictionary dict;
-	private Board highest;
-	private ServerSocket socket;
-	private long startTime;
+	private ArrayList<Board> highestBoards = new ArrayList<Board>();
+	private int maxHighestBoards = 10;
 	private ArrayList<ServerThread> threads = new ArrayList<ServerThread>();
 	
-	public Server(int port, String dictPath) {
-		// create the socket
-		socket = null;
-		try {
-			socket = new ServerSocket(port);
-		} catch (IOException e) {
-			System.err.println("Could not listen on port " + port);
-			System.exit(1);
-		}
-		// create the dictionary
-		dict = new Dictionary();
-		dict.buildDictionary(dictPath);
-	}
+	public Server() {}
 	
-	// TODO analyze migrant allocation algorithm
-	public synchronized void addMigrant(Board migrant, ServerThread caller) {
-		Collections.sort(threads);
-		for (ServerThread c : threads) {
-			if ((c.getMigrant() == null || c.getMigrant().getScore() < migrant
-					.getScore())
-					&& caller != c) {
-				c.setMigrant(migrant);
-				break;
-			}
+	/**
+	 * Starts listening for clients on the given port, starting a new thread for each client. Never returns.
+	 */
+	public void listen(int port) throws IOException {
+		ServerSocket socket = new ServerSocket(port);
+		
+		while (true) {
+			// Wait for a connection to be made
+			Socket s = socket.accept();
+			
+			// Start up a new ServerThread on that connection
+			ServerThread serverThread = new ServerThread(s, this, curClientID++);
+			threads.add(serverThread);
+			serverThread.start();
 		}
 	}
-	
-	public synchronized Dictionary getDictionary() {
-		return dict;
-	}
-	
-	// TODO analyze variable pop cap
-	public synchronized int getPopCapForClient(int clientID) {
-		Collections.sort(threads);
-		if (threads.size() == 1) {
-			return DEFAULT_POP_CAP;
-		}
-		for (int i = 0; i < threads.size(); i++) {
-			if (threads.get(i).getId() == clientID) {
-				return (DEFAULT_POP_CAP + POP_CAP_RANGE / 2)
-						- i * (POP_CAP_RANGE / (threads.size() - 1));
-			}
-		}
-		return DEFAULT_POP_CAP;
+
+	/**
+	 * Sends a migrant Board to a random client.
+	 */
+	public synchronized void migrate(Board migrant) {
+		ServerThread randomThread = threads.get((int) (Math.random() * threads.size()));
+		randomThread.sendImmigrant(migrant);
 	}
 	
 	/**
-	 * Starts listening for clients. Starts a new thread for each client. Never
-	 * returns.
+	 * Considers the given Board as a candidate for the high score list.
 	 */
-	public void listen() {
-		try {
-			while (true) {
-				Socket s = socket.accept();
-				ServerThread serverThread = new ServerThread(this, s,
-						curClientID++);
-				threads.add(serverThread);
-				serverThread.start();
-				// start the timer
-				if (startTime == 0) { // if not already started
-					startTime = System.currentTimeMillis();
-				}
+	public synchronized void considerHighest(Board b) {
+		// If there are no highest Boards yet, just insert it
+		if (highestBoards.size() == 0) {
+			highestBoards.add(b);
+		}
+		
+		// Otherwise, use linear insertion and truncate the list
+		for (int i = 0; i < highestBoards.size(); i++) {
+			if (b.compareTo(highestBoards.get(i)) > 0) {
+				highestBoards.add(i, b);
+				break;
 			}
-		} catch (IOException e) {
-			System.err.println("Error while listening: " + e);
-			System.exit(1);
+		}
+		while (highestBoards.size() > maxHighestBoards) {
+			highestBoards.remove(0); // The list is stored in ascending order, so remove the worst Board
 		}
 	}
 	
-	public synchronized void setHighest(Board b) {
-		if (highest == null || b.getScore() > highest.getScore()) {
-			highest = b;
-			System.err.println(highest);
-		}
-	}
-	
+	/**
+	 * Removes the given thread from the list of threads. Called by the threads themselves when their connection ends.
+	 */
 	public synchronized void removeThread(ServerThread t) {
 		threads.remove(t);
 	}
-	
-	private void reset() {
-		System.out.println(highest + " "
-				+ Long.toString(System.currentTimeMillis() - startTime));
-		// reset state
-		highest = null;
-		for (ServerThread t : threads) {
-			t.reset();
-		}
-		startTime = System.currentTimeMillis(); // restart timer
+
+	/**
+	 * Sets the maximum number of high-scoring Boards to store. The default is 10.
+	 */
+	public void setMaxHighestBoards(int maxHighestBoards) {
+		this.maxHighestBoards = maxHighestBoards;
 	}
 }
