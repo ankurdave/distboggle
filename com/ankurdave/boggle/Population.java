@@ -53,14 +53,12 @@ public class Population {
 			// Mate them childrenPerCouple times
 			for (int j = 0; j < childrenPerCouple; j++) {
 				child = parent1.merge(parent2);
-				child.generate();
 				children.add(child);
 			}
 		}
 		
 		// Do elitist selection -- preserve the highest-scoring Board into the next generation
 		GeneticBoard highest = currentGeneration.get(currentGeneration.size() - 1);
-		highest.incrementAge();
 		children.add(highest);
 		
 		// Copy the unique children into childrenUnique /*@ \label{Population.java:unique} @*/
@@ -70,6 +68,9 @@ public class Population {
 			if (!uniqueGridStrings.contains(b.gridToString())) {
 				childrenUnique.add(b);
 				uniqueGridStrings.add(b.gridToString());
+				
+				// Score each unique Board
+				b.generate();
 			}
 		}
 		
