@@ -293,14 +293,14 @@ public class Board implements Comparable<Board> {
 		 * Checks whether or not the given x coordinate is within the bounds of the board.
 		 */
 		private boolean xInRange(int x) {
-			return x > 0 && x < getWidth();
+			return x >= 0 && x < getWidth();
 		}
 		
 		/**
 		 * Checks whether or not the given y coordinate is within the bounds of the board.
 		 */
 		private boolean yInRange(int y) {
-			return y > 0 && y < getHeight();
+			return y >= 0 && y < getHeight();
 		}
 	}
 }
