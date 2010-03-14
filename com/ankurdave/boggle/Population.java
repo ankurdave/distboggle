@@ -3,13 +3,12 @@ package com.ankurdave.boggle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Vector;
 
 /**
  * Represents a population of {@link Board}s in the context of a genetic algorithm.
  */
 public class Population {
-	private Vector<GeneticBoard> currentGeneration;
+	private ArrayList<GeneticBoard> currentGeneration;
 	private Dictionary dict;
 	private int generation = 0;
 	private int popCap = 20;
@@ -97,7 +96,7 @@ public class Population {
 		System.err.println("Immigrant: " + board);
 	}
 	
-	public Vector<GeneticBoard> getCurrentGeneration() {
+	public ArrayList<GeneticBoard> getCurrentGeneration() {
 		return currentGeneration;
 	}
 	
@@ -123,7 +122,7 @@ public class Population {
 	
 	private void makeFirstGeneration() {
 		generation = 0;
-		currentGeneration = new Vector<GeneticBoard>(startingPopulation);
+		currentGeneration = new ArrayList<GeneticBoard>(startingPopulation);
 		GeneticBoard temp;
 		for (int i = 0; i < startingPopulation; i++) {
 			temp = new GeneticBoard(Util.randomGrid(sideLength));
