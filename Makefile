@@ -1,9 +1,8 @@
 SOURCE_FILES= \
 com/ankurdave/boggle/Board.java \
+com/ankurdave/boggle/BoardDimensionMismatchException.java \
 com/ankurdave/boggle/BoardPerformanceTester.java \
 com/ankurdave/boggle/BoardTester.java \
-com/ankurdave/boggle/ByBoardScore.java \
-com/ankurdave/boggle/ByStringLength.java \
 com/ankurdave/boggle/Dictionary.java \
 com/ankurdave/boggle/DictionaryTester.java \
 com/ankurdave/boggle/GenerationEmptyException.java \
